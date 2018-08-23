@@ -1,0 +1,12 @@
+graphfile: ../data-format-parse/amazon_68M.feluca
+parts: 2
+algorithm: hdrf (lambda: 1.0)
+
+vertices: 735292	edges: 3523247
+min-degree: 1
+max-degree: 1086
+
+Replication factor: 1.4658
+Load relative standard deviation: 0.0
+Max partition size (edge cardinality): 1761624
+Max partition size (vertex cardinality): 539587
