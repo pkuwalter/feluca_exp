@@ -57,7 +57,7 @@ static __global__ void pr_kernel_inner(
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
-		const float * const values,
+		float * const values,
 		float * const add_values,
 		int * const continue_flag)
 {
