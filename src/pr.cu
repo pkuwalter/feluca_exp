@@ -435,6 +435,8 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	}while(flag && step<10);
 
 
+
+
 	//Todo to get the true value of inner vertice and outer vertice
 	for (int i = 0; i < gpu_num; ++i)
 	{
@@ -455,6 +457,12 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 			total_time_n=total_compute_time[i];
 	}
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
+
+	printf("The color value is as follow\n");
+	 for (int i = 0; i < vertex_num; i++){
+	 	printf("The color value is: \t%d\n", h_value[i]);
+	 }
+
 
 //	printf("Total time of pr_gpu is %.3f ms\n",total_time);
 	printf("Elapsed time of pr_gpu is %.3f ms\n", total_time/(step));
