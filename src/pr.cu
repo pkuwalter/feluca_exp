@@ -460,9 +460,10 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
 
 	printf("The color value is as follow\n");
+	int num = 0;
 	for(int n=0;n<vertex_num;n++)
     {
-          for(i=n+1;i<vertex_num;i++)
+          for(int i=n+1;i<vertex_num;i++)
             
             if(h_value[i]==h_value[n])
                 break;
