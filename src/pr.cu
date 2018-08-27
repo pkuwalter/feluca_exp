@@ -460,21 +460,23 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
 
 	printf("The color value is as follow\n");
-	int num = 0;
-	for(int n=0;n<vertex_num;n++)
+	int color_num = 0;
+	int countcolorbegin = 0;
+	int countcolorsecond = 0;
+	for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
     {
-          for(int i=n+1;i<vertex_num;i++)
+          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
             
-            if(h_value[i]==h_value[n])
+            if(h_value[countcolorsecond]==h_value[countcolorbegin])
                 break;
-        if(i==vertex_num) //a[n]和后面的每一个数字都不一样，不同的数字加1
+        if(countcolorsecond==vertex_num) //a[n]和后面的每一个数字都不一样，不同的数字加1
         {
-            num++;
+            color_num++;
         }
     }
      
     //num=20-num;
-    printf("Used color numbers:\t%d\n",num);
+    printf("Used color numbers:\t%d\n",color_num);
 
 
 
