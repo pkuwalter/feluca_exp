@@ -32,7 +32,7 @@ static __global__ void  pr_kernel_outer(
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
-		const float * const values,
+		float * const values,
 		float * const add_values)
 {
 	// total thread number & thread index of this thread
@@ -43,11 +43,17 @@ static __global__ void  pr_kernel_outer(
 	{
 		int src=edge_src[i];
 		int dest=edge_dest[i];
+		if(values[src] == values[dest])
+		{
+			values[dest] = values[src] + 1;
+		}
+		/******************
 		if (out_degree[src])
 		{
 			sum=values[src]/out_degree[src];
 		    atomicAdd(&add_values[dest],sum);
-		}		
+		}	
+		*******************/	
 	}
 }
 
