@@ -206,8 +206,8 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	{
 		h_value[i]=(float *)malloc(sizeof(float)*(vertex_num+1));
 		h_add_value[i]=(float *)malloc(sizeof(float)*(vertex_num+1));
-		//memset 0.0 or 1.0 
-		memset(h_value[i],0.0,sizeof(float)*(vertex_num+1));
+		//初始化颜色值 
+		memset(h_value[i],rand() % init_num_colors,sizeof(float)*(vertex_num+1));
 		h_flag[i]=(int *)malloc(sizeof(int));
 	}
 
