@@ -460,7 +460,8 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
 
 	printf("The color value is as follow\n");
-	int color_num = 0;
+	int *color_num = 0;
+	int max_color = 0;
 	int countcolorbegin = 0;
 	int countcolorsecond = 0;
 	printf("The GPU number \t The vertices\t The color Value\n");
@@ -477,10 +478,20 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	                break;
 	        if(countcolorsecond==vertex_num)
 	        {
-	            color_num++;
-	        }
+	            color_num[i]++;
+	        }	       
 	    }
 	}
+	max_color = color_num[0];
+
+	for(int i =0; i < gpu_num; i++)
+	{
+		if(color_num[i]>max_color)
+		{
+			max_color=color_num[i];
+		}
+	}
+	printf("The total color is: %d\n",max_color);
 
      
     //num=20-num;
