@@ -71,14 +71,21 @@ static __global__ void pr_kernel_inner(
 	{
 		int src=edge_src[i];
 		int dest=edge_dest[i];
+		if (values[src] == values[dest])
+		{
+			values[dest] = values[src] + 1;
+		}
+		/*************
 		if (out_degree[src])
 		{
 			sum=values[src]/out_degree[src];
 		    atomicAdd(&add_values[dest],sum);
 		}
+		************/
 	}
 	__syncthreads();
 	//check
+	/*********************
 	float new_value=0.0f;
 	for (int i = index; i < edge_num; i+=n)
 	{
@@ -89,6 +96,7 @@ static __global__ void pr_kernel_inner(
 		}
 	}
 	if (flag==1)  *continue_flag=1;
+	******************/
 }
 
 
