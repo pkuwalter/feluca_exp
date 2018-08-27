@@ -115,8 +115,8 @@ static __global__ void kernel_extract_values(
 		int dest=edge_dest[i];
 		value[dest]=add_value[dest];
 		add_value[dest]=0.0;
-	}  
-}
+	}  }
+
 
 void merge_value_on_cpu(
 		int const vertex_num, 
@@ -463,17 +463,25 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	int color_num = 0;
 	int countcolorbegin = 0;
 	int countcolorsecond = 0;
-	for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
-    {
-          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
-            
-            if(h_value[countcolorsecond]==h_value[countcolorbegin])
-                break;
-        if(countcolorsecond==vertex_num) //a[n]和后面的每一个数字都不一样，不同的数字加1
-        {
-            color_num++;
-        }
-    }
+	printf("The GPU number \t The vertices\t The color Value\n");
+	for (int i =0; i < gpu_num; i++)
+	{
+
+		for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
+	    {
+	    	printf("%d\t%d\t%d\n",i,countcolorbegin,h_value[i][countcolorbegin]);
+
+	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
+	            
+	            if(h_value[countcolorsecond]==h_value[countcolorbegin])
+	                break;
+	        if(countcolorsecond==vertex_num)
+	        {
+	            color_num++;
+	        }
+	    }
+	}
+
      
     //num=20-num;
     printf("Used color numbers:\t%d\n",color_num);
