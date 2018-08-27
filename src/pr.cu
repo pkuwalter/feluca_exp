@@ -7,6 +7,7 @@
 #include "timer.h"
 //#include "algorithm.h"
 #include "cuda_runtime.h"
+#include "set.h"
 
 // The number of partitioning the outer chunk must be greater or equal to 1
 #define ITERATE_IN_OUTER 2
@@ -459,9 +460,21 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
 
 	printf("The color value is as follow\n");
-	 for (int i = 0; i < vertex_num; i++){
-	 	printf("The color value is: \t%d\n", h_value[i]);
-	 }
+	for(int n=0;n<vertex_num;n++)
+    {
+          for(i=n+1;i<vertex_num;i++)
+            
+            if(h_value[i]==h_value[n])
+                break;
+        if(i==vertex_num) //a[n]和后面的每一个数字都不一样，不同的数字加1
+        {
+            num++;
+        }
+    }
+     
+    //num=20-num;
+    printf("Used color numbers:\t%d\n",num);
+
 
 
 //	printf("Total time of pr_gpu is %.3f ms\n",total_time);
