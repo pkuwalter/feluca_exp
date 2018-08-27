@@ -178,6 +178,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	printf("PageRank is running on GPU...............\n");
 	printf("Start malloc edgelist...\n");
 
+	int init_num_colors = 100；
 	int **h_flag=(int **)malloc(sizeof(int *)*gpu_num);
 	int vertex_num=dsize->vertex_num;
 	int **d_edge_inner_src=(int **)malloc(sizeof(int *)*gpu_num);
