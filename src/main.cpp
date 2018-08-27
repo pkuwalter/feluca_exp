@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
 		printf("Description:\n");
 		//printf("Input filename1 Input filename2 vertex_num  edge_num gpu_num \n ");
 		printf("Input filename1 Input filename2 vertex_num  edge_num   max_part_vertex_num  max_part_edge_num  gpu_num\n ");
-		printf("eg: \\home\\xxling\\amazon.vertices \\hofme\\xxling\\amazon.edges 735322 5158012 356275 880813 4\n"); 
+		//printf("eg: \\home\\xxling\\amazon.vertices \\hofme\\xxling\\amazon.edges 735322 5158012 356275 880813 4\n"); 
+		printf("eg: example/amazon/amazon.vertices example/amazon/amazon.edges 735292 3523247 539587 1761624 4\n");
 		printf("Note:\n");
 		/* TODO print detailed informatition about input command. */
 		printf("....to be continued ...\n");
