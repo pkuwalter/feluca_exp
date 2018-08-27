@@ -218,6 +218,15 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 		h_add_value[i]=(float *)malloc(sizeof(float)*(vertex_num+1));
 		//初始化颜色值 
 		memset(h_value[i],rand() % init_num_colors,sizeof(float)*(vertex_num+1));
+
+		printf("The Initialization Color is as follow\n");
+		printf("GPU Num\tColor\n");
+
+		for(int j =0; j < vertex_num; j++)
+		{
+			printf("%d\t%d\n",i,h_value[i][j]);
+		}
+
 		h_flag[i]=(int *)malloc(sizeof(int));
 	}
 
