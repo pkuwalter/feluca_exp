@@ -286,8 +286,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
 
-		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
+		HANDLE_ERROR(cudaMalloc((void **)&d_color[i],sizeof(int)*(vertex_num+1)));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_color[i],(void *)h_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 		//pr different
 		HANDLE_ERROR(cudaMalloc((void **)&d_add_color[i],sizeof(int)*(vertex_num+1)));
 		//"memset only works for bytes. If you're using the runtime API, you can use thrust::fill() instead"
@@ -346,7 +346,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 							d_edge_duplicate_src[i]+(j-1)*duplicate_per_size,
 							d_edge_duplicate_dst[i]+(j-1)*duplicate_per_size,
 							//[i],
-							d_value[i],
+							d_color[i],
 							d_add_color[i]);
 					//TODO didn't not realize overlap
 					//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][j-1]));
@@ -361,7 +361,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						d_edge_duplicate_src[i]+(iterate_in_duplicate-1)*duplicate_per_size,
 						d_edge_duplicate_dst[i]+(iterate_in_duplicate-1)*duplicate_per_size,
 						//d_outdegree[i],
-						d_value[i],
+						d_color[i],
 						d_add_color[i]);
 				//TODO didn't not realize 
 				//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate-1]));
@@ -379,7 +379,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						d_edge_local_src[i],
 						d_edge_local_dst[i],
 						//d_outdegree[i],
-						d_value[i],
+						d_color[i],
 						d_add_color[i],
 						d_flag[i]);			
 				HANDLE_ERROR(cudaMemcpyAsync(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate]));	    
@@ -402,14 +402,14 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			//extract bitmap to the value
 			HANDLE_ERROR(cudaMemcpyAsync(d_add_color[i], value_gpu,sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 			HANDLE_ERROR(cudaEventRecord(start_asyn[i], stream[i][0]));
-			// d_value copy to the value of outer vertices
+			// d_color copy to the value of outer vertices
 
 			kernel_extract_color<<<208,128,0,stream[i][0]>>>
 				(  
 				 g[i]->edge_outer_num,
 				 d_edge_duplicate_dst[i],
 				 d_add_color[i],
-				 d_value[i]
+				 d_color[i]
 				);
 
 			HANDLE_ERROR(cudaEventRecord(stop_asyn[i], stream[i][0]));
@@ -446,7 +446,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		cudaSetDevice(i);
-		cudaMemcpyAsync((void *)h_color[i],(void *)d_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][0]);
+		cudaMemcpyAsync((void *)h_color[i],(void *)d_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][0]);
 	}
 
 	printf("Gather result on cpu....\n");
@@ -524,7 +524,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		HANDLE_ERROR(cudaFree(d_edge_duplicate_dst[i]));
 		HANDLE_ERROR(cudaFree(d_edge_local_src[i]));
 		HANDLE_ERROR(cudaFree(d_edge_local_dst[i]));
-		HANDLE_ERROR(cudaFree(d_value[i]));
+		HANDLE_ERROR(cudaFree(d_color[i]));
 		HANDLE_ERROR(cudaFree(d_flag[i]));
 
 		HANDLE_ERROR(cudaDeviceReset());
