@@ -2,6 +2,7 @@
 #include<malloc.h>
 #include<stdio.h>
 #include<omp.h>
+#include <thrust/count.h>
 
 #include "graph.h"
 #include "timer.h"
