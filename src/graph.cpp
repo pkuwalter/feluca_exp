@@ -43,8 +43,8 @@ Graph**  Initiate_graph (int gpu_num, DataSize *size )
 		/*Allocte the memory to the array in graph_h*/
 		g[i]->edge_duplicate_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
 		g[i]->edge_duplicate_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
-		g[i]->edge_inner_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
-		g[i]->edge_inner_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
+		g[i]->edge_local_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
+		g[i]->edge_local_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
 		g[i]->vertex_id=(int *)malloc(sizeof(int)*(size->max_part_vertex_num));
 		g[i]->vertex_duplicate_id=(int *)malloc(sizeof(int)*(size->max_part_vertex_num));
 	}
@@ -223,14 +223,14 @@ void read_graph_edges(char * filename,Graph **g, int gpu_num,int *copy_num)
 	int  edge_src,edge_dst;
 	int partition_id;
 	
-	/* record the idx of edge_inner_src[] and edge_inner_dst[] */
-	int *edge_inner_num;
+	/* record the idx of edge_local_src[] and edge_local_dst[] */
+	int *edge_local_num;
 	int tmp_num;
 	FILE *f=NULL;
 
 	f=fopen(filename,"r");
-	edge_inner_num=(int *)malloc(sizeof(int)*gpu_num);
-	memset(edge_inner_num,0,sizeof(int)*gpu_num);
+	edge_local_num=(int *)malloc(sizeof(int)*gpu_num);
+	memset(edge_local_num,0,sizeof(int)*gpu_num);
 
 	if(f==NULL)
 	{
@@ -264,11 +264,11 @@ void read_graph_edges(char * filename,Graph **g, int gpu_num,int *copy_num)
     	}
     	else
     	{
-    		/* edge_dest is inner */
-            tmp_num=edge_inner_num[partition_id];
-            g[partition_id]->edge_inner_src[tmp_num]=edge_src;
-            g[partition_id]->edge_inner_dst[tmp_num]=edge_dst;
-            edge_inner_num[partition_id]=tmp_num+1;
+    		/* edge_dest is local */
+            tmp_num=edge_local_num[partition_id];
+            g[partition_id]->edge_local_src[tmp_num]=edge_src;
+            g[partition_id]->edge_local_dst[tmp_num]=edge_dst;
+            edge_local_num[partition_id]=tmp_num+1;
     	}
     	tmp_num=g[partition_id]->edge_num;
     	g[partition_id]->edge_num=tmp_num+1;
