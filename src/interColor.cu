@@ -22,7 +22,7 @@
 
 
 // The number of partitioning the outer chunk must be greater or equal to 1
-#define ITERATE_IN_OUTER 2
+#define ITERATE_IN_DUPLICATE 2
 #define NUM_THREADS 1
 
 #define PAGERANK_COEFFICIENT  0.85f
@@ -200,8 +200,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 	/* determine the size of outer vertex in one process*/
 	int tmp_per_size = min_num_outer_edge(g,gpu_num);
-	int duplicate_per_size=tmp_per_size/ITERATE_IN_OUTER;
-	int iterate_in_outer=ITERATE_IN_OUTER+1;
+	int duplicate_per_size=tmp_per_size/ITERATE_IN_DUPLICATE;
+	int iterate_in_duplicate=ITERATE_IN_DUPLICATE+1;
 	int *last_duplicate_per_size=(int *)malloc(sizeof(int)*gpu_num);
 	memset(last_duplicate_per_size,0,sizeof(int)*gpu_num);
 
@@ -240,7 +240,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		cudaSetDevice(i);
-		stream[i]=(cudaStream_t *)malloc((iterate_in_outer+1)*sizeof(cudaStream_t));
+		stream[i]=(cudaStream_t *)malloc((iterate_in_duplicate+1)*sizeof(cudaStream_t));
 		HANDLE_ERROR(cudaEventCreate(&start_outer[i],0));
 		HANDLE_ERROR(cudaEventCreate(&stop_outer[i],0));
 		HANDLE_ERROR(cudaEventCreate(&start_inner[i],0));
@@ -249,7 +249,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		HANDLE_ERROR(cudaEventCreate(&stop_asyn[i],0));
 
 
-		for (int j = 0; j <= iterate_in_outer; ++j)
+		for (int j = 0; j <= iterate_in_duplicate; ++j)
 		{
 			HANDLE_ERROR(cudaStreamCreate(&stream[i][j]));
 		}
@@ -266,25 +266,25 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 		if (duplicate_per_size!=0 && duplicate_per_size < out_size)
 		{
-			for (int j = 1; j < iterate_in_outer; ++j)
+			for (int j = 1; j < iterate_in_duplicate; ++j)
 			{
 				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_src[i]+(j-1)*duplicate_per_size),(void *)(g[i]->edge_outer_src+(j-1)*duplicate_per_size),sizeof(int)*duplicate_per_size,cudaMemcpyHostToDevice, stream[i][j-1]));
 				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_dst[i]+(j-1)*duplicate_per_size),(void *)(g[i]->edge_outer_dst+(j-1)*duplicate_per_size),sizeof(int)*duplicate_per_size,cudaMemcpyHostToDevice, stream[i][j-1]));			
 			}
 		}
 
-		last_duplicate_per_size[i]=g[i]->edge_outer_num-duplicate_per_size * (iterate_in_outer-1);           
-		if (last_duplicate_per_size[i]>0 && iterate_in_outer>1 )
+		last_duplicate_per_size[i]=g[i]->edge_outer_num-duplicate_per_size * (iterate_in_duplicate-1);           
+		if (last_duplicate_per_size[i]>0 && iterate_in_duplicate>1 )
 		{
-			HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_src[i]+(iterate_in_outer-1)*duplicate_per_size),(void *)(g[i]->edge_outer_src+(iterate_in_outer-1)*duplicate_per_size),sizeof(int)*last_duplicate_per_size[i],cudaMemcpyHostToDevice, stream[i][iterate_in_outer-1]));
-			HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_dst[i]+(iterate_in_outer-1)*duplicate_per_size),(void *)(g[i]->edge_outer_dst+(iterate_in_outer-1)*duplicate_per_size),sizeof(int)*last_duplicate_per_size[i],cudaMemcpyHostToDevice, stream[i][iterate_in_outer-1]));
+			HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_src[i]+(iterate_in_duplicate-1)*duplicate_per_size),(void *)(g[i]->edge_outer_src+(iterate_in_duplicate-1)*duplicate_per_size),sizeof(int)*last_duplicate_per_size[i],cudaMemcpyHostToDevice, stream[i][iterate_in_duplicate-1]));
+			HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_dst[i]+(iterate_in_duplicate-1)*duplicate_per_size),(void *)(g[i]->edge_outer_dst+(iterate_in_duplicate-1)*duplicate_per_size),sizeof(int)*last_duplicate_per_size[i],cudaMemcpyHostToDevice, stream[i][iterate_in_duplicate-1]));
 		}
 
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_src[i],sizeof(int)*inner_size));
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_dst[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
@@ -339,7 +339,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			//kernel of outer edgelist
 			if (duplicate_per_size!=0 && duplicate_per_size < g[i]->edge_outer_num)
 			{
-				for (int j = 1; j < iterate_in_outer; ++j)
+				for (int j = 1; j < iterate_in_duplicate; ++j)
 				{				
 					coloring_kernel_duplicate<<<208,128,0,stream[i][j-1]>>>(
 							duplicate_per_size,
@@ -353,28 +353,28 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 				}
 			}
 
-			last_duplicate_per_size[i]=g[i]->edge_outer_num-duplicate_per_size * (iterate_in_outer-1);           
-			if (last_duplicate_per_size[i]>0 && iterate_in_outer>1  )
+			last_duplicate_per_size[i]=g[i]->edge_outer_num-duplicate_per_size * (iterate_in_duplicate-1);           
+			if (last_duplicate_per_size[i]>0 && iterate_in_duplicate>1  )
 			{
-				coloring_kernel_duplicate<<<208,128,0,stream[i][iterate_in_outer-1]>>>(
+				coloring_kernel_duplicate<<<208,128,0,stream[i][iterate_in_duplicate-1]>>>(
 						last_duplicate_per_size[i],
-						d_edge_duplicate_src[i]+(iterate_in_outer-1)*duplicate_per_size,
-						d_edge_duplicate_dst[i]+(iterate_in_outer-1)*duplicate_per_size,
+						d_edge_duplicate_src[i]+(iterate_in_duplicate-1)*duplicate_per_size,
+						d_edge_duplicate_dst[i]+(iterate_in_duplicate-1)*duplicate_per_size,
 						//d_outdegree[i],
 						d_value[i],
 						d_add_color[i]);
 				//TODO didn't not realize 
-				//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][iterate_in_outer-1]));
+				//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate-1]));
 			}
-			HANDLE_ERROR(cudaEventRecord(stop_outer[i], stream[i][iterate_in_outer-1]));
+			HANDLE_ERROR(cudaEventRecord(stop_outer[i], stream[i][iterate_in_duplicate-1]));
 
             HANDLE_ERROR(cudaMemcpy((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
-			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_outer]));
+			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_duplicate]));
 			//inner+flag
 			inner_edge_num=g[i]->edge_num-g[i]->edge_outer_num;
 			if (inner_edge_num>0)
 			{
-				coloring_kernel_local<<<208,128,0,stream[i][iterate_in_outer]>>>(
+				coloring_kernel_local<<<208,128,0,stream[i][iterate_in_duplicate]>>>(
 						inner_edge_num,
 						d_edge_local_src[i],
 						d_edge_local_dst[i],
@@ -382,9 +382,9 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						d_value[i],
 						d_add_color[i],
 						d_flag[i]);			
-				HANDLE_ERROR(cudaMemcpyAsync(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost,stream[i][iterate_in_outer]));	    
+				HANDLE_ERROR(cudaMemcpyAsync(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate]));	    
 			}
-			HANDLE_ERROR(cudaEventRecord(stop_inner[i],stream[i][iterate_in_outer]));
+			HANDLE_ERROR(cudaEventRecord(stop_inner[i],stream[i][iterate_in_duplicate]));
 		}
 
 
