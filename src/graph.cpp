@@ -37,16 +37,16 @@ Graph**  Initiate_graph (int gpu_num, DataSize *size )
 		g[i]=(Graph *)malloc(sizeof(Graph));
 		g[i]->edge_num=0;
 		g[i]->vertex_num=0;
-		g[i]->edge_outer_num=0;
-		g[i]->vertex_outer_num=0;
+		g[i]->edge_duplicate_num=0;
+		g[i]->vertex_duplicate_num=0;
 
 		/*Allocte the memory to the array in graph_h*/
-		g[i]->edge_outer_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
-		g[i]->edge_outer_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
+		g[i]->edge_duplicate_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
+		g[i]->edge_duplicate_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
 		g[i]->edge_inner_src=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
 		g[i]->edge_inner_dst=(int *)malloc(sizeof(int)*(size->max_part_edge_num));
 		g[i]->vertex_id=(int *)malloc(sizeof(int)*(size->max_part_vertex_num));
-		g[i]->vertex_outer_id=(int *)malloc(sizeof(int)*(size->max_part_vertex_num));
+		g[i]->vertex_duplicate_id=(int *)malloc(sizeof(int)*(size->max_part_vertex_num));
 	}
 	printf("Malloc Finished!\n");
 	return g;
@@ -61,7 +61,7 @@ void read_graph_vertices(char *  filename, Graph ** g,int  gpu_num,int *copy_num
 	char *loc=line;
 	int vertex_id;
 	int partition_id;
-	/* check whether the vertex is OUTER or not in each line. If OUTER, flag is true */ 
+	/* check whether the vertex is duplicate or not in each line. If duplicate, flag is true */ 
 	bool flag=true;
 	int tmp_num=0;
 	int cp_num=0;
@@ -105,10 +105,10 @@ void read_graph_vertices(char *  filename, Graph ** g,int  gpu_num,int *copy_num
 		if(loc==NULL) flag=false;
 		while(loc!=NULL)
 		{
-			/* record the OUTER */
-			tmp_num=g[partition_id]->vertex_outer_num;
-			g[partition_id]->vertex_outer_id[tmp_num++]=vertex_id;
-			g[partition_id]->vertex_outer_num=tmp_num;
+			/* record the duplicate */
+			tmp_num=g[partition_id]->vertex_duplicate_num;
+			g[partition_id]->vertex_duplicate_id[tmp_num++]=vertex_id;
+			g[partition_id]->vertex_duplicate_num=tmp_num;
 
 			partition_id=(int)atoi(loc);
 			LT(partition_id,gpu_num);
@@ -120,9 +120,9 @@ void read_graph_vertices(char *  filename, Graph ** g,int  gpu_num,int *copy_num
 		}
 		if(flag==true)
 		{
-			tmp_num=g[partition_id]->vertex_outer_num;
-			g[partition_id]->vertex_outer_id[tmp_num++]=vertex_id;
-			g[partition_id]->vertex_outer_num=tmp_num;
+			tmp_num=g[partition_id]->vertex_duplicate_num;
+			g[partition_id]->vertex_duplicate_id[tmp_num++]=vertex_id;
+			g[partition_id]->vertex_duplicate_num=tmp_num;
 		}
 		copy_num[vertex_id-1]=cp_num;           
 	}   
@@ -135,7 +135,7 @@ void read_graph_vertices_m(char *  filename, Graph **g,int  gpu_num,int *copy_nu
 	char *loc=line;
 	int vertex_id;
 	int partition_id;
-	/* check whether the vertex is OUTER or not in each line. If OUTER, flag is true */ 
+	/* check whether the vertex is duplicate or not in each line. If duplicate, flag is true */ 
 	bool flag=true;
 	int tmp_num=0;
 	int cp_num=0;
@@ -187,10 +187,10 @@ void read_graph_vertices_m(char *  filename, Graph **g,int  gpu_num,int *copy_nu
 		if(loc==NULL) flag=false;
 		while(loc!=NULL)
 		{
-			/* record the OUTER */
-			tmp_num=g[partition_id]->vertex_outer_num;
-			g[partition_id]->vertex_outer_id[tmp_num++]=vertex_id;
-			g[partition_id]->vertex_outer_num=tmp_num;
+			/* record the duplicate */
+			tmp_num=g[partition_id]->vertex_duplicate_num;
+			g[partition_id]->vertex_duplicate_id[tmp_num++]=vertex_id;
+			g[partition_id]->vertex_duplicate_num=tmp_num;
 
 			partition_id=(int)atoi(loc);
 			LT(partition_id,gpu_num);
@@ -204,9 +204,9 @@ void read_graph_vertices_m(char *  filename, Graph **g,int  gpu_num,int *copy_nu
 		}
 		if(flag==true)
 		{
-			tmp_num=g[partition_id]->vertex_outer_num;
-			g[partition_id]->vertex_outer_id[tmp_num++]=vertex_id;
-			g[partition_id]->vertex_outer_num=tmp_num;
+			tmp_num=g[partition_id]->vertex_duplicate_num;
+			g[partition_id]->vertex_duplicate_id[tmp_num++]=vertex_id;
+			g[partition_id]->vertex_duplicate_num=tmp_num;
 		}
 		copy_num[vertex_id-1]=cp_num;
 		map_copy[vertex_id-1]=mp_copy;           
@@ -252,15 +252,15 @@ void read_graph_edges(char * filename,Graph **g, int gpu_num,int *copy_num)
     	LT(partition_id,gpu_num);
          /* Importation :  decide which edges should be processed firstly */
          // Anthor Method:
-    	 // check whether edge_dst is included in g[partition_id]->vertice_outer_id[]
-    	 // change the type of g[partition_id]->vertice_outer_id[]? vector?
+    	 // check whether edge_dst is included in g[partition_id]->vertice_duplicate_id[]
+    	 // change the type of g[partition_id]->vertice_duplicate_id[]? vector?
     	if(copy_num[edge_dst-1]>1)
     	{
-    		/* edge_dest is outer */
-            tmp_num=g[partition_id]->edge_outer_num;
-    		g[partition_id]->edge_outer_src[tmp_num]=edge_src;
-    		g[partition_id]->edge_outer_dst[tmp_num]=edge_dst;
-    		g[partition_id]->edge_outer_num=tmp_num+1;
+    		/* edge_dest is duplicate */
+            tmp_num=g[partition_id]->edge_duplicate_num;
+    		g[partition_id]->edge_duplicate_src[tmp_num]=edge_src;
+    		g[partition_id]->edge_duplicate_dst[tmp_num]=edge_dst;
+    		g[partition_id]->edge_duplicate_num=tmp_num+1;
     	}
     	else
     	{
@@ -291,27 +291,27 @@ void read_graph_size(Graph **g, DataSize *dsize, int gpu_num)
 	dsize->max_part_edge_num=max_edge_num;
 }
 
-/* Record the max size of outer edge lsits in GPUs which is used for determining the block size */
+/* Record the max size of duplicate edge lsits in GPUs which is used for determining the block size */
 int max_num_duplicate_edge(Graph **g, int gpu_num)
 {
 	int max=0;
     for (int i = 0; i < gpu_num; ++i)
     {
-    	if(max < g[i]->edge_outer_num)
-    		max=g[i]->edge_outer_num;
+    	if(max < g[i]->edge_duplicate_num)
+    		max=g[i]->edge_duplicate_num;
     }
     return max;
 }
 
-/* Record the min size of outer edge lsits in GPUs which is used for determining the block size */
+/* Record the min size of duplicate edge lsits in GPUs which is used for determining the block size */
 int min_num_duplicate_edge(Graph **g, int gpu_num)
 {
-	int min=g[0]->edge_outer_num;
+	int min=g[0]->edge_duplicate_num;
 	for (int i = 0; i < gpu_num; ++i)
 	{
-		if (min>g[i]->edge_outer_num)
+		if (min>g[i]->edge_duplicate_num)
 		{
-			min=g[i]->edge_outer_num;
+			min=g[i]->edge_duplicate_num;
 		}
 	}
 	return min;
