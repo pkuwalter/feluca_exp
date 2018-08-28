@@ -292,7 +292,7 @@ void read_graph_size(Graph **g, DataSize *dsize, int gpu_num)
 }
 
 /* Record the max size of outer edge lsits in GPUs which is used for determining the block size */
-int max_num_outer_edge(Graph **g, int gpu_num)
+int max_num_duplicate_edge(Graph **g, int gpu_num)
 {
 	int max=0;
     for (int i = 0; i < gpu_num; ++i)
@@ -304,7 +304,7 @@ int max_num_outer_edge(Graph **g, int gpu_num)
 }
 
 /* Record the min size of outer edge lsits in GPUs which is used for determining the block size */
-int min_num_outer_edge(Graph **g, int gpu_num)
+int min_num_duplicate_edge(Graph **g, int gpu_num)
 {
 	int min=g[0]->edge_outer_num;
 	for (int i = 0; i < gpu_num; ++i)
