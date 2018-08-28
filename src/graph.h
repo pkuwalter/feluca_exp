@@ -2,10 +2,6 @@
 #define GRAPH_H_INCLUDED
 
 /*
-Name: GRAPH_H_DEFINE
-Copyright: 2016
-Author: Xuan Luo
-Date: 13/01/16 11:00
 Description: This file defines the data structures for Graph
 Note: IDs for vertice start from 1
 */

@@ -13,7 +13,6 @@
 #include "graph.h"
 
 /*
-Name: GRAPH_H
 Description: Using the VGP to partition the graph.
 This file is used to read the result of VGP.
 
