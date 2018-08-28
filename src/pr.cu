@@ -304,7 +304,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
 	//pr different
 	//float **d_tem_value=(float **)malloc(sizeof(float *)*gpu_num);
-	int **d_add_value=(float **)malloc(sizeof(int *)*gpu_num);
+	int **d_add_value=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_outdegree=(int **)malloc(sizeof(int *)*gpu_num);
 
 	int **d_flag=(int **)malloc(sizeof(int *)*gpu_num);
