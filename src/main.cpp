@@ -115,7 +115,9 @@ int main(int argc, char *argv[])
     
     get_outdegree(origin_g,vertex_num,out_degree);
     free(origin_g);
-    pr_gpu(g,gpu_num,value_gpu_pr,dsize,out_degree,copy_num,position_id);
+    pr_gpu(g,gpu_num,value_gpu_pr,dsize,out_degree,copy_num,position_id);    
+
+
     free(g);
     free(out_degree);
 
