@@ -26,4 +26,4 @@ pr.o : src/pr.cu src/graph.h src/timer.h
 	${NVCC} -c -Xcompiler -fopenmp -o obj/pr.o src/pr.cu   
 
 clean:
-	rm *.o
+	rm obj/*.o
