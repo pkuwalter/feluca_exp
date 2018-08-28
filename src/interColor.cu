@@ -187,7 +187,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	int **d_edge_duplicate_src=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_duplicate_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **h_color=(int **)malloc(sizeof(int *)* gpu_num);
-	int **h_add_value=(int **)malloc(sizeof(int *)*gpu_num);
+	int **h_add_color=(int **)malloc(sizeof(int *)*gpu_num);
 	int *uncolored = (int *)malloc(sizeof(int) * vertex_num);
 
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
@@ -208,7 +208,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
-		h_add_value[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
+		h_add_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
 		memset(h_color[i],rand() % init_num_colors,sizeof(int)*(vertex_num+1));
 
@@ -349,7 +349,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 							d_value[i],
 							d_add_value[i]);
 					//TODO didn't not realize overlap
-					//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_value[i]),(void *)(d_add_value[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][j-1]));
+					//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_value[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][j-1]));
 				}
 			}
 
@@ -364,11 +364,11 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						d_value[i],
 						d_add_value[i]);
 				//TODO didn't not realize 
-				//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_value[i]),(void *)(d_add_value[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][iterate_in_outer-1]));
+				//HANDLE_ERROR(cudaMemcpyAsync((void *)(h_add_color[i]),(void *)(d_add_value[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][iterate_in_outer-1]));
 			}
 			HANDLE_ERROR(cudaEventRecord(stop_outer[i], stream[i][iterate_in_outer-1]));
 
-            HANDLE_ERROR(cudaMemcpy((void *)(h_add_value[i]),(void *)(d_add_value[i]),sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
+            HANDLE_ERROR(cudaMemcpy((void *)(h_add_color[i]),(void *)(d_add_value[i]),sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
 			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_outer]));
 			//inner+flag
 			inner_edge_num=g[i]->edge_num-g[i]->edge_outer_num;
@@ -390,7 +390,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 		//merge bitmap on gpu
 		double t1=omp_get_wtime();
-		merge_colors_on_cpu(vertex_num, gpu_num, h_add_value, value_gpu, copy_num, uncolored, flag);
+		merge_colors_on_cpu(vertex_num, gpu_num, h_add_color, value_gpu, copy_num, uncolored, flag);
 		double t2=omp_get_wtime();
 		record_time=(t2-t1)*1000;
 		gather_time+=record_time;
@@ -450,7 +450,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	}
 
 	printf("Gather result on cpu....\n");
-	Gather_result_colors(vertex_num,gpu_num,copy_num,h_add_value,value_gpu);
+	Gather_result_colors(vertex_num,gpu_num,copy_num,h_add_color,value_gpu);
 
 	printf("Time print\n");
 
