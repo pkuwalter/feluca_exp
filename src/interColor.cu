@@ -110,14 +110,14 @@ static __global__ void kernel_extract_color(
 void merge_colors_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
-		int * const * h_add_value, 
-		int * const value_gpu, 
+		int * const * h_add_color, 
+		int * const color_gpu, 
 		int *copy_num, 
 		int *uncolored,
 		int flag)
 {
 	int i,id;
-	float new_value=0.0f;
+	float new_color=0.0f;
 	omp_set_num_threads(NUM_THREADS);	
 #pragma omp parallel private(i)
 	{
@@ -133,15 +133,15 @@ void merge_colors_on_cpu(
 				if(percentage < (float)num_undone/vertex_num)
 					break;
 				**********************/
-				new_value=0.0f;
+				new_color=0.0f;
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					new_value+=h_add_value[j][i];  
+					new_color+=h_add_color[j][i];  
 				}
-				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
-				if(fabs(new_value- value_gpu[i]>PAGERANK_THRESHOLD))
+				new_color=PAGERANK_COEFFICIENT*new_color+1.0 - PAGERANK_COEFFICIENT;
+				if(fabs(new_color- color_gpu[i]>PAGERANK_THRESHOLD))
 					//flag=1;
-				value_gpu[i]=new_value;
+				color_gpu[i]=new_color;
 			}
 		}
 	}
@@ -151,12 +151,12 @@ void Gather_result_colors(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const copy_num,
-		int * const  *h_add_value,  
-		int * const value_gpu
+		int * const  *h_add_color,  
+		int * const color_gpu
 		)
 {
 	int i,id;
-	float new_value=0.0f;
+	float new_color=0.0f;
 	omp_set_num_threads(NUM_THREADS);	
 #pragma omp parallel private(i)
 	{
@@ -165,13 +165,13 @@ void Gather_result_colors(
 		{
 			if (copy_num[i]>1)
 			{
-				new_value=0.0f;
+				new_color=0.0f;
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					new_value+=h_add_value[j][i];  
+					new_color+=h_add_color[j][i];  
 				}
-				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
-				value_gpu[i]=new_value;	
+				new_color=PAGERANK_COEFFICIENT*new_color+1.0 - PAGERANK_COEFFICIENT;
+				color_gpu[i]=new_color;	
 			}
 		}
 	}
