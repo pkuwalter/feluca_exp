@@ -379,7 +379,7 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 			for (int j = 1; j < iterate_in_duplicate; ++j)
 			{
 				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_src[i]+(j-1)*duplicate_per_size),(void *)(g[i]->edge_duplicate_src+(j-1)*duplicate_per_size),sizeof(int)*duplicate_per_size,cudaMemcpyHostToDevice, stream[i][j-1]));
-				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_dst[i]+(j-1)*duplicate_per_size),(void *)(g[i]->edge_duplicate_dst+(j-1)*duplicate_per_size),sizeof(int)*oduplicate_per_size,cudaMemcpyHostToDevice, stream[i][j-1]));
+				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_edge_duplicate_dst[i]+(j-1)*duplicate_per_size),(void *)(g[i]->edge_duplicate_dst+(j-1)*duplicate_per_size),sizeof(int)*duplicate_per_size,cudaMemcpyHostToDevice, stream[i][j-1]));
 				HANDLE_ERROR(cudaMemcpyAsync((void *)(d_bitmap[i]+(j-1)*bitmap_len),(void *)(h_bitmap[i]+(j-1)*bitmap_len),sizeof(int)*(bitmap_len),cudaMemcpyHostToDevice,stream[i][j-1]));
 			}
 		}
