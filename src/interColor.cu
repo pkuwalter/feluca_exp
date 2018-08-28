@@ -186,7 +186,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	int **d_edge_local_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_duplicate_src=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_duplicate_dst=(int **)malloc(sizeof(int *)*gpu_num);
-	int **h_value=(int **)malloc(sizeof(int *)* gpu_num);
+	int **h_color=(int **)malloc(sizeof(int *)* gpu_num);
 	int **h_add_value=(int **)malloc(sizeof(int *)*gpu_num);
 	int *uncolored = (int *)malloc(sizeof(int) * vertex_num);
 
@@ -207,17 +207,17 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 	for (int i = 0; i < gpu_num; ++i)
 	{
-		h_value[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
+		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		h_add_value[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
-		memset(h_value[i],rand() % init_num_colors,sizeof(int)*(vertex_num+1));
+		memset(h_color[i],rand() % init_num_colors,sizeof(int)*(vertex_num+1));
 
 		printf("The Initialization Color is as follow\n");
 		printf("GPU Num\tColor\n");
 
 		for(int j =0; j < vertex_num; j++)
 		{
-			printf("%d\t%d\n",i,h_value[i][j]);
+			printf("%d\t%d\n",i,h_color[i][j]);
 		}
 
 		h_flag[i]=(int *)malloc(sizeof(int));
@@ -287,7 +287,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 		//pr different
 		HANDLE_ERROR(cudaMalloc((void **)&d_add_value[i],sizeof(int)*(vertex_num+1)));
 		//"memset only works for bytes. If you're using the runtime API, you can use thrust::fill() instead"
@@ -446,7 +446,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		cudaSetDevice(i);
-		cudaMemcpyAsync((void *)h_value[i],(void *)d_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][0]);
+		cudaMemcpyAsync((void *)h_color[i],(void *)d_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost,stream[i][0]);
 	}
 
 	printf("Gather result on cpu....\n");
@@ -475,11 +475,11 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 		for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
 	    {
-	    	printf("%d\t%d\t%d\n",i,countcolorbegin,h_value[i][countcolorbegin]);
+	    	printf("%d\t%d\t%d\n",i,countcolorbegin,h_color[i][countcolorbegin]);
 
 	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
 	            
-	            if(h_value[i][countcolorsecond]==h_value[i][countcolorbegin])
+	            if(h_color[i][countcolorsecond]==h_color[i][countcolorbegin])
 	                break;
 	        if(countcolorsecond==vertex_num)
 	        {
@@ -529,7 +529,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 		HANDLE_ERROR(cudaDeviceReset());
 		//error 
-		//free(h_value[i]);
+		//free(h_color[i]);
 		free(h_flag[i]);
 		free(stream[i]);
 	}
