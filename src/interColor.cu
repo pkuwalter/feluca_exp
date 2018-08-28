@@ -378,7 +378,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			inner_edge_num=g[i]->edge_num-g[i]->edge_outer_num;
 			if (inner_edge_num>0)
 			{
-				pr_kernel_local<<<208,128,0,stream[i][iterate_in_outer]>>>(
+				coloring_kernel_local<<<208,128,0,stream[i][iterate_in_outer]>>>(
 						inner_edge_num,
 						d_edge_inner_src[i],
 						d_edge_inner_dst[i],
