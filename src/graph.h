@@ -20,21 +20,21 @@ struct graph_h{
 	int *vertex_id;
 
 	/*
-	*   Divide the vertex into two sets.One which has copy is called duplicate, Other called INNER.
+	*   Divide the vertex into two sets.One which has copy is called duplicate, Other called local.
 	*   Record the information of duplicate.
 	*/
 	/* edge_duplicate_src[e] is the source vertex of Edge e, when the destination vertex is duplicate*/
 	int *edge_duplicate_src;
 	/* edge_duplicate_dst[e] is the destination vertex of Edge e, when the destination vertex is duplicate*/
 	int *edge_duplicate_dst;
-	/* edge_inner_src[e] is the source vertex of Edge e, when the destination vertex is inner*/
-	int *edge_inner_src;
-	/* edge_inner_dst[e] is the destition vertex of Edge e, when the destination vertex is inner*/
-	int *edge_inner_dst;
+	/* edge_local_src[e] is the source vertex of Edge e, when the destination vertex is local*/
+	int *edge_local_src;
+	/* edge_local_dst[e] is the destition vertex of Edge e, when the destination vertex is local*/
+	int *edge_local_dst;
 	int vertex_duplicate_num;
 	/*  The edge list whose source or destination vertex is duplicate should be processed firstly */
 	int edge_duplicate_num;
-	/*  The vertex_inner_id record the id set of duplicate vertex which be processed in this machine */
+	/*  The vertex_local_id record the id set of duplicate vertex which be processed in this machine */
 	/* No need */
 	int *vertex_duplicate_id;          
 };
@@ -44,8 +44,8 @@ struct graph_d
 {
 	int * d_edge_duplicate_src;
 	int * d_edge_duplicate_dst;
-	int * d_edge_inner_src;
-	int * d_edge_inner_dst;
+	int * d_edge_local_src;
+	int * d_edge_local_dst;
 	int * d_value;
 	int * d_flag;
 };
