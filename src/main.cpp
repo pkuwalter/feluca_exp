@@ -8,6 +8,8 @@
 #include "graph.h"
 #include "timer.h"
 #include "algorithm.h"
+
+using namespace std;
 //#include "cuda_runtime.h"
 /*
 Name: MAIN
