@@ -189,9 +189,10 @@ static __global__ void kernel_extract_values(
 void merge_value_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
-		int * uncolored, 
+		int * const * h_add_value, 
 		int * const color_gpu , 
 		int *copy_num, 
+		int *uncolored,
 		int flag)
 {
 	int i,id;
@@ -300,6 +301,7 @@ void pr_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degre
 	int **d_edge_outer_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **h_value=(int **)malloc(sizeof(int *)* gpu_num);
 	int **h_add_value=(int **)malloc(sizeof(int *)*gpu_num);
+	int *uncolored = (int *)malloc(sizeof(int) * vertex_num);
 
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
 	//pr different
@@ -501,7 +503,7 @@ void pr_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degre
 
 		//merge bitmap on gpu
 		double t1=omp_get_wtime();
-		merge_value_on_cpu(vertex_num, gpu_num, h_add_value, value_gpu, copy_num, flag);
+		merge_value_on_cpu(vertex_num, gpu_num, h_add_value, value_gpu, copy_num, uncolored, flag);
 		double t2=omp_get_wtime();
 		record_time=(t2-t1)*1000;
 		gather_time+=record_time;
