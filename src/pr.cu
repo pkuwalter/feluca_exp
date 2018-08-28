@@ -58,7 +58,7 @@ static __global__ void  pr_kernel_outer(
 		if(values[src] == values[dest])
 		{
 			values[dest] = values[src] + 1;
-			uncolored[dest] = 1;
+			un_colored[dest] = 1;
 		}
 		/******************
 		if (out_degree[src])
