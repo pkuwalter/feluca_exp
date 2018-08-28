@@ -44,7 +44,7 @@ static __global__ void  pr_kernel_dumplcate(
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
-		int * const values,
+		int * const colors,
 		int * const un_colored)
 {
 	// total thread number & thread index of this thread
@@ -55,9 +55,9 @@ static __global__ void  pr_kernel_dumplcate(
 	{
 		int src=edge_src[i];
 		int dest=edge_dest[i];
-		if(values[src] == values[dest])
+		if(colors[src] == colors[dest])
 		{
-			values[dest] = values[src] + 1;
+			colors[dest] = colors[src] + 1;
 			un_colored[dest] = 1;
 		}
 	}
