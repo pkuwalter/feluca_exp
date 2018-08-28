@@ -25,8 +25,8 @@
 #define ITERATE_IN_OUTER 2
 #define NUM_THREADS 1
 
-//#define PAGERANK_COEFFICIENT  0.85f
-//#define PAGERANK_THRESHOLD  0.005f
+#define PAGERANK_COEFFICIENT  0.85f
+#define PAGERANK_THRESHOLD  0.005f
 
 
 
@@ -50,7 +50,7 @@ static __global__ void  pr_kernel_outer(
 	// total thread number & thread index of this thread
 	int n = blockDim.x * gridDim.x;
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	float sum=0.0f;
+	
 	for (int i = index; i < edge_num; i+=n)
 	{
 		int src=edge_src[i];
