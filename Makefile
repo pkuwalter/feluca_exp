@@ -1,4 +1,6 @@
-NVCC=/usr/local/cuda/bin/nvcc -g
+INCLUDES=/usr/local/cuda/samples/common/inc/
+CC=g++ -std=c++11
+NVCC=nvcc -std=c++11 -I ${INCLUDES}
 
 exp : src/main.cpp graph.o check.o graph.o check.o coding.o bfs.o pr.o
 	${NVCC} -Xcompiler -fopenmp src/main.cpp obj/graph.o obj/check.o obj/coding.o obj/bfs.o obj/pr.o -o exp
@@ -22,3 +24,6 @@ bfs.o : src/bfs.cu src/graph.h src/timer.h
 
 pr.o : src/pr.cu src/graph.h src/timer.h
 	${NVCC} -c -Xcompiler -fopenmp -o obj/pr.o src/pr.cu   
+
+clean:
+	rm *.o
