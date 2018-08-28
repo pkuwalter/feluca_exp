@@ -190,13 +190,13 @@ void merge_value_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const * h_add_value, 
-		int * const color_gpu , 
+		int * const value_gpu, 
 		int *copy_num, 
 		int *uncolored,
 		int flag)
 {
 	int i,id;
-	//float new_value=0.0f;
+	float new_value=0.0f;
 	omp_set_num_threads(NUM_THREADS);	
 #pragma omp parallel private(i)
 	{
@@ -205,11 +205,23 @@ void merge_value_on_cpu(
 		{
 			if (copy_num[i]>1)
 			{
+				/**************************
 				int num_undone = std::count(uncolored, uncolored + vertex_num, 1);
 				
 				float percentage = 0.05;
 				if(percentage < (float)num_undone/vertex_num)
 					break;
+				**********************/
+				new_value=0.0f;
+				for (int j = 0; j < gpu_num; ++j)
+				{
+					new_value+=h_add_value[j][i];  
+				}
+				
+				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
+				if(fabs(new_value- value_gpu[i]>PAGERANK_THRESHOLD))
+					//flag=1;
+				value_gpu[i]=new_value;
 				
 			}		
 		}
