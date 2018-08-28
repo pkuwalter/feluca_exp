@@ -37,19 +37,19 @@ void checkGraphvalue(Graph ** g, DataSize * size,int gpu_num)
 		printf("******GPU %d Information**********\n",i);
 		/*  vertice */
 		printf("vertex_num: %d\n",g[i]->vertex_num);
-		printf("vertex_outer_num: %d\n", g[i]->vertex_outer_num);
+		printf("vertex_duplicate_num: %d\n", g[i]->vertex_duplicate_num);
 		printf("vertex_id:\n");
 		checkvalue_s(g[i]->vertex_id,g[i]->vertex_num);
-		printf("vertex_outer_id:\n");
-		checkvalue_s(g[i]->vertex_outer_id,g[i]->vertex_outer_num);
+		printf("vertex_duplicate_id:\n");
+		checkvalue_s(g[i]->vertex_duplicate_id,g[i]->vertex_duplicate_num);
 
         /* edges */
 		printf("edge_num: %d\n",g[i]->edge_num);
-		printf("edge_outer_num: %d\n",g[i]->edge_outer_num); 
-        printf("edge list of outer:\n");
-        checkvalue_d(g[i]->edge_outer_src,g[i]->edge_outer_dst,g[i]->edge_outer_num);
+		printf("edge_duplicate_num: %d\n",g[i]->edge_duplicate_num); 
+        printf("edge list of duplicate:\n");
+        checkvalue_d(g[i]->edge_duplicate_src,g[i]->edge_duplicate_dst,g[i]->edge_duplicate_num);
         printf("edge list of inner:\n");
-        edge_inner_num=g[i]->edge_num-g[i]->edge_outer_num;
+        edge_inner_num=g[i]->edge_num-g[i]->edge_duplicate_num;
         checkvalue_d(g[i]->edge_inner_src,g[i]->edge_inner_dst,edge_inner_num);
 	}
 }
