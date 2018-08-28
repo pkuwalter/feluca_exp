@@ -26,4 +26,4 @@ interColor.o : src/interColor.cu src/graph.h src/timer.h
 	${NVCC} -c -Xcompiler -fopenmp -o obj/interColor.o src/interColor.cu   
 
 clean:
-	rm obj/*.o
+	rm exp obj/*.o 
