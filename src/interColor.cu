@@ -60,13 +60,6 @@ static __global__ void  pr_kernel_outer(
 			values[dest] = values[src] + 1;
 			un_colored[dest] = 1;
 		}
-		/******************
-		if (out_degree[src])
-		{
-			sum=values[src]/out_degree[src];
-		    atomicAdd(&add_values[dest],sum);
-		}	
-		*******************/	
 	}
 }
 
@@ -83,8 +76,6 @@ static __global__ void pr_kernel_inner(
 	// total thread number & thread index of this thread
 	int n = blockDim.x * gridDim.x;
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	//int flag=0;
-	//float sum=0.0f;
 	for (int i = index; i < edge_num; i+=n)
 	{
 		int src=edge_src[i];
@@ -93,80 +84,10 @@ static __global__ void pr_kernel_inner(
 		{
 			values[dest] = values[src] + 1;
 			d_uncolored[dest] = 1;
-		}
-		/*************
-		if (out_degree[src])
-		{
-			sum=values[src]/out_degree[src];
-		    atomicAdd(&add_values[dest],sum);
-		}
-		************/
+		}		
 	}
-	__syncthreads();
-	//check
-	/*********************
-	float new_value=0.0f;
-	for (int i = index; i < edge_num; i+=n)
-	{
-		new_value=add_values[edge_dest[i]]*PAGERANK_COEFFICIENT+1.0f - PAGERANK_COEFFICIENT;
-		if (fabs(new_value-values[edge_dest[i]])>PAGERANK_THRESHOLD)
-		{
-			flag=1;
-		}
-	}
-	if (flag==1)  *continue_flag=1;
-	******************/
+	__syncthreads();	
 }
-
-
-/*****************************************
-static __global__ void pr_kernel_inner(  
-		const int edge_num,
-		const int * const edge_src,
-		const int * const edge_dest,
-		const int * const out_degree,
-		float * const values,
-		float * const add_values,
-		int * const continue_flag)
-{
-
-	// total thread number & thread index of this thread
-	int n = blockDim.x * gridDim.x;
-	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	//int flag=0;
-	//float sum=0.0f;
-	for (int i = index; i < edge_num; i+=n)
-	{
-		int src=edge_src[i];
-		int dest=edge_dest[i];
-		if (values[src] == values[dest])
-		{
-			values[dest] = values[src] + 1;
-		}
-	
-		//if (out_degree[src])
-		//{
-		//	sum=values[src]/out_degree[src];
-		//    atomicAdd(&add_values[dest],sum);
-		//}
-		
-	}
-	__syncthreads();
-	//check
-	
-	//float new_value=0.0f;
-	//for (int i = index; i < edge_num; i+=n)
-	//{
-	//	new_value=add_values[edge_dest[i]]*PAGERANK_COEFFICIENT+1.0f - PAGERANK_COEFFICIENT;
-	//	if (fabs(new_value-values[edge_dest[i]])>PAGERANK_THRESHOLD)
-	//	{
-	//		flag=1;
-	//	}
-	//}
-	//if (flag==1)  *continue_flag=1;
-	
-}
-*******************************/
 
 
 static __global__ void kernel_extract_values(
@@ -228,46 +149,6 @@ void merge_value_on_cpu(
 	}
 }
 
-/***********************************************
-void merge_value_on_cpu(
-		int const vertex_num, 
-		int const gpu_num, 
-		float * const  *h_add_value, 
-		float * const value_gpu , 
-		int *copy_num, 
-		int flag)
-{
-	int i,id;
-	float new_value=0.0f;
-	omp_set_num_threads(NUM_THREADS);	
-#pragma omp parallel private(i)
-	{
-		id=omp_get_thread_num(); 
-		for (i = id; i < vertex_num; i=i+NUM_THREADS)
-		{
-			if (copy_num[i]>1)
-			{
-				//如何设置迭代终止条件
-
-
-				
-				new_value=0.0f;
-				for (int j = 0; j < gpu_num; ++j)
-				{
-					new_value+=h_add_value[j][i];  
-				}
-				
-				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
-				if(fabs(new_value- value_gpu[i]>PAGERANK_THRESHOLD))
-					//flag=1;
-				value_gpu[i]=new_value;
-				
-			}		
-		}
-	}
-}
-*******************************************************************/
-
 void Gather_result_pr(
 		int const vertex_num, 
 		int const gpu_num, 
@@ -298,8 +179,8 @@ void Gather_result_pr(
 	}
 }
 
-/* PageRank algorithm on GPU */
-void pr_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degree, int *copy_num, int **position_id)
+/* GraphColoring algorithm on GPU */
+void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degree, int *copy_num, int **position_id)
 {
 	printf("PageRank is running on GPU...............\n");
 	printf("Start malloc edgelist...\n");
@@ -316,7 +197,7 @@ void pr_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degre
 	int *uncolored = (int *)malloc(sizeof(int) * vertex_num);
 
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
-	//pr different
+	
 	//float **d_tem_value=(float **)malloc(sizeof(float *)*gpu_num);
 	int **d_add_value=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_outdegree=(int **)malloc(sizeof(int *)*gpu_num);
