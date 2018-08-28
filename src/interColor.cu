@@ -28,8 +28,6 @@
 #define PAGERANK_COEFFICIENT  0.85f
 #define PAGERANK_THRESHOLD  0.005f
 
-
-
 #ifdef __CUDA_RUNTIME_H__
 #define HANDLE_ERROR(err) if (err != cudaSuccess) {	\
 	printf("CUDA Error in %s at line %d: %s\n", \
@@ -37,7 +35,6 @@
 	exit(1);\
 }
 #endif  // #ifdef __CUDA_RUNTIME_H__    
-
 
 static __global__ void  coloring_kernel_dumplcate(  
 		const int edge_num,
@@ -72,7 +69,6 @@ static __global__ void coloring_kernel_local(
 		int * const d_uncolored,
 		int * const continue_flag)
 {
-
 	// total thread number & thread index of this thread
 	int n = blockDim.x * gridDim.x;
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
@@ -186,8 +182,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	int init_num_colors = 100;
 	int **h_flag=(int **)malloc(sizeof(int *)*gpu_num);
 	int vertex_num=dsize->vertex_num;
-	int **d_edge_inner_src=(int **)malloc(sizeof(int *)*gpu_num);
-	int **d_edge_inner_dst=(int **)malloc(sizeof(int *)*gpu_num);
+	int **d_edge_local_src=(int **)malloc(sizeof(int *)*gpu_num);
+	int **d_edge_local_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_outer_src=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_outer_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **h_value=(int **)malloc(sizeof(int *)* gpu_num);
@@ -285,10 +281,10 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		}
 
 
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_inner_src[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_inner_dst[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_src[i],sizeof(int)*inner_size));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_dst[i],sizeof(int)*inner_size));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
@@ -380,8 +376,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			{
 				coloring_kernel_local<<<208,128,0,stream[i][iterate_in_outer]>>>(
 						inner_edge_num,
-						d_edge_inner_src[i],
-						d_edge_inner_dst[i],
+						d_edge_local_src[i],
+						d_edge_local_dst[i],
 						//d_outdegree[i],
 						d_value[i],
 						d_add_value[i],
@@ -526,8 +522,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 		//HANDLE_ERROR(cudaEventDestroy(stop[i]));
 		HANDLE_ERROR(cudaFree(d_edge_outer_src[i]));
 		HANDLE_ERROR(cudaFree(d_edge_outer_dst[i]));
-		HANDLE_ERROR(cudaFree(d_edge_inner_src[i]));
-		HANDLE_ERROR(cudaFree(d_edge_inner_dst[i]));
+		HANDLE_ERROR(cudaFree(d_edge_local_src[i]));
+		HANDLE_ERROR(cudaFree(d_edge_local_dst[i]));
 		HANDLE_ERROR(cudaFree(d_value[i]));
 		HANDLE_ERROR(cudaFree(d_flag[i]));
 
