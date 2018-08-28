@@ -194,7 +194,7 @@ void merge_value_on_cpu(
 			{
 				
 				float percentage = 0.05;
-				if(percentage < uncolored / vertex_num)
+				if(percentage < uncolored/vertex_num)
 					break;
 				
 			}		
