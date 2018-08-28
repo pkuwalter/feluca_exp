@@ -229,11 +229,11 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	cudaEvent_t tmp_start,tmp_stop;
 	stream=(cudaStream_t **)malloc(gpu_num*sizeof(cudaStream_t*));
 
-	cudaEvent_t * start_duplicate,*stop_duplicate,*start_inner,*stop_inner,*start_asyn,*stop_asyn;
+	cudaEvent_t * start_duplicate,*stop_duplicate,*start_local,*stop_local,*start_asyn,*stop_asyn;
 	start_duplicate=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	stop_duplicate=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
-	start_inner=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
-	stop_inner=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
+	start_local=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
+	stop_local=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	start_asyn=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	stop_asyn=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 
@@ -243,8 +243,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		stream[i]=(cudaStream_t *)malloc((iterate_in_duplicate+1)*sizeof(cudaStream_t));
 		HANDLE_ERROR(cudaEventCreate(&start_duplicate[i],0));
 		HANDLE_ERROR(cudaEventCreate(&stop_duplicate[i],0));
-		HANDLE_ERROR(cudaEventCreate(&start_inner[i],0));
-		HANDLE_ERROR(cudaEventCreate(&stop_inner[i],0));  
+		HANDLE_ERROR(cudaEventCreate(&start_local[i],0));
+		HANDLE_ERROR(cudaEventCreate(&stop_local[i],0));  
 		HANDLE_ERROR(cudaEventCreate(&start_asyn[i],0));
 		HANDLE_ERROR(cudaEventCreate(&stop_asyn[i],0));
 
@@ -259,7 +259,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	{
 		cudaSetDevice(i);
 		int out_size=g[i]->edge_duplicate_num;
-		int inner_size=g[i]->edge_num - out_size;
+		int local_size=g[i]->edge_num - out_size;
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_duplicate_src[i],sizeof(int)*out_size));
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_duplicate_dst[i],sizeof(int)*out_size));
@@ -281,10 +281,10 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		}
 
 
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_src[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_dst[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_src[i],sizeof(int)*local_size));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_dst[i],sizeof(int)*local_size));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_local_src,sizeof(int)*local_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_local_dst,sizeof(int)*local_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_color[i],sizeof(int)*(vertex_num+1)));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_color[i],(void *)h_color[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
@@ -305,26 +305,26 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	printf("Malloc is finished!\n");
 
 	/* Before While: Time Initialization */
-	float *duplicate_compute_time,*inner_compute_time,*compute_time,*total_compute_time,*extract_bitmap_time;
+	float *duplicate_compute_time,*local_compute_time,*compute_time,*total_compute_time,*extract_bitmap_time;
 	float gather_time=0.0;
 	float cpu_gather_time=0.0;
 	float total_time=0.0;
 	float record_time=0.0;
 	duplicate_compute_time=(float *)malloc(sizeof(float)*gpu_num);
-	inner_compute_time=(float *)malloc(sizeof(float)*gpu_num);
+	local_compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	total_compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	extract_bitmap_time=(float *)malloc(sizeof(float)*gpu_num);
 
 	memset(duplicate_compute_time,0,sizeof(float)*gpu_num);
-	memset(inner_compute_time,0,sizeof(float)*gpu_num);
+	memset(local_compute_time,0,sizeof(float)*gpu_num);
 	memset(compute_time,0,sizeof(float)*gpu_num);
 
 
 	/* Before While: Variable Initialization */
 	int step=0;
 	int flag=0;
-	int inner_edge_num=0;
+	int local_edge_num=0;
 
 	printf("Computing......\n");
 	do
@@ -369,13 +369,13 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 			HANDLE_ERROR(cudaEventRecord(stop_duplicate[i], stream[i][iterate_in_duplicate-1]));
 
             HANDLE_ERROR(cudaMemcpy((void *)(h_add_color[i]),(void *)(d_add_color[i]),sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
-			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_duplicate]));
-			//inner+flag
-			inner_edge_num=g[i]->edge_num-g[i]->edge_duplicate_num;
-			if (inner_edge_num>0)
+			HANDLE_ERROR(cudaEventRecord(start_local[i], stream[i][iterate_in_duplicate]));
+			//local+flag
+			local_edge_num=g[i]->edge_num-g[i]->edge_duplicate_num;
+			if (local_edge_num>0)
 			{
 				coloring_kernel_local<<<208,128,0,stream[i][iterate_in_duplicate]>>>(
-						inner_edge_num,
+						local_edge_num,
 						d_edge_local_src[i],
 						d_edge_local_dst[i],
 						//d_outdegree[i],
@@ -384,7 +384,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 						d_flag[i]);			
 				HANDLE_ERROR(cudaMemcpyAsync(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate]));	    
 			}
-			HANDLE_ERROR(cudaEventRecord(stop_inner[i],stream[i][iterate_in_duplicate]));
+			HANDLE_ERROR(cudaEventRecord(stop_local[i],stream[i][iterate_in_duplicate]));
 		}
 
 
@@ -426,23 +426,23 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		{
 			cudaSetDevice(i);
 			HANDLE_ERROR(cudaEventSynchronize(stop_duplicate[i]));
-			HANDLE_ERROR(cudaEventSynchronize(stop_inner[i]));
+			HANDLE_ERROR(cudaEventSynchronize(stop_local[i]));
 			HANDLE_ERROR(cudaEventSynchronize(stop_asyn[i]));
 
 			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_duplicate[i], stop_duplicate[i]));
 			duplicate_compute_time[i]+=record_time;
-			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_inner[i], stop_inner[i]));  
-			inner_compute_time[i]+=record_time;
+			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_local[i], stop_local[i]));  
+			local_compute_time[i]+=record_time;
 			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_asyn[i], stop_asyn[i]));  
 			extract_bitmap_time[i]+=record_time;
-			total_compute_time[i]=duplicate_compute_time[i]+extract_bitmap_time[i]-inner_compute_time[i]>0?(duplicate_compute_time[i]+extract_bitmap_time[i]):inner_compute_time[i];
+			total_compute_time[i]=duplicate_compute_time[i]+extract_bitmap_time[i]-local_compute_time[i]>0?(duplicate_compute_time[i]+extract_bitmap_time[i]):local_compute_time[i];
 		}		
 	}while(flag && step<10);
 
 
 
 
-	//Todo to get the true value of inner vertice and duplicate vertice
+	//Todo to get the true value of local vertice and duplicate vertice
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		cudaSetDevice(i);
@@ -506,7 +506,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	{
 		printf("GPU %d\n",i);
 		printf("Duplicate_Compute_Time(include pre-stage):  %.3f ms\n", duplicate_compute_time[i]/step);
-		printf("Inner_Compute_Time:                     %.3f ms\n", inner_compute_time[i]/step);
+		printf("Local_Compute_Time:                     %.3f ms\n", local_compute_time[i]/step);
 		printf("Total Compute_Time                      %.3f ms\n", total_compute_time[i]/step);
 		printf("Extract_Bitmap_Time                     %.3f ms\n", extract_bitmap_time[i]/step);
 	}
@@ -534,6 +534,6 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		free(stream[i]);
 	}
 	free(duplicate_compute_time);
-	free(inner_compute_time);
+	free(local_compute_time);
 	free(compute_time);
 }
