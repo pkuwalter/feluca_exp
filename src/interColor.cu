@@ -39,7 +39,7 @@
 #endif  // #ifdef __CUDA_RUNTIME_H__    
 
 
-static __global__ void  pr_kernel_dumplcate(  
+static __global__ void  coloring_kernel_dumplcate(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
@@ -63,7 +63,7 @@ static __global__ void  pr_kernel_dumplcate(
 	}
 }
 
-static __global__ void pr_kernel_local(  
+static __global__ void coloring_kernel_local(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
@@ -147,7 +147,7 @@ void merge_value_on_cpu(
 	}
 }
 
-void Gather_result_pr(
+void Gather_result_colors(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const copy_num,
@@ -345,7 +345,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			{
 				for (int j = 1; j < iterate_in_outer; ++j)
 				{				
-					pr_kernel_dumplcate<<<208,128,0,stream[i][j-1]>>>(
+					coloring_kernel_dumplcate<<<208,128,0,stream[i][j-1]>>>(
 							outer_per_size,
 							d_edge_outer_src[i]+(j-1)*outer_per_size,
 							d_edge_outer_dst[i]+(j-1)*outer_per_size,
@@ -360,7 +360,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			last_outer_per_size[i]=g[i]->edge_outer_num-outer_per_size * (iterate_in_outer-1);           
 			if (last_outer_per_size[i]>0 && iterate_in_outer>1  )
 			{
-				pr_kernel_dumplcate<<<208,128,0,stream[i][iterate_in_outer-1]>>>(
+				coloring_kernel_dumplcate<<<208,128,0,stream[i][iterate_in_outer-1]>>>(
 						last_outer_per_size[i],
 						d_edge_outer_src[i]+(iterate_in_outer-1)*outer_per_size,
 						d_edge_outer_dst[i]+(iterate_in_outer-1)*outer_per_size,
@@ -454,7 +454,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 	}
 
 	printf("Gather result on cpu....\n");
-	Gather_result_pr(vertex_num,gpu_num,copy_num,h_add_value,value_gpu);
+	Gather_result_colors(vertex_num,gpu_num,copy_num,h_add_value,value_gpu);
 
 	printf("Time print\n");
 
