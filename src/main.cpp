@@ -14,7 +14,6 @@
 #include "graph.h"
 #include "timer.h"
 #include "algorithm.h"
-#include "interColor.cu"
 
 using namespace std;
 //#include "cuda_runtime.h"
