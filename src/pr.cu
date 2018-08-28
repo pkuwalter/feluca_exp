@@ -192,9 +192,10 @@ void merge_value_on_cpu(
 		{
 			if (copy_num[i]>1)
 			{
+				int num_undone = std::count(uncolored, uncolored + vertex_num, 1);
 				
 				float percentage = 0.05;
-				if(percentage < uncolored/vertex_num)
+				if(percentage < (float)num_undone/vertex_num)
 					break;
 				
 			}		
