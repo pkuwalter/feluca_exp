@@ -189,7 +189,7 @@ static __global__ void kernel_extract_values(
 void merge_value_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
-		int * const  *uncolored, 
+		int * uncolored, 
 		int * const color_gpu , 
 		int *copy_num, 
 		int flag)
