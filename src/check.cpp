@@ -31,7 +31,7 @@ void checkvalue_d(int * g, int *m,int size)
 /* check graph data structure */
 void checkGraphvalue(Graph ** g, DataSize * size,int gpu_num)
 {
-	int edge_inner_num;
+	int edge_local_num;
 	for(int i=0;i<gpu_num;i++)
 	{
 		printf("******GPU %d Information**********\n",i);
@@ -48,9 +48,9 @@ void checkGraphvalue(Graph ** g, DataSize * size,int gpu_num)
 		printf("edge_duplicate_num: %d\n",g[i]->edge_duplicate_num); 
         printf("edge list of duplicate:\n");
         checkvalue_d(g[i]->edge_duplicate_src,g[i]->edge_duplicate_dst,g[i]->edge_duplicate_num);
-        printf("edge list of inner:\n");
-        edge_inner_num=g[i]->edge_num-g[i]->edge_duplicate_num;
-        checkvalue_d(g[i]->edge_inner_src,g[i]->edge_inner_dst,edge_inner_num);
+        printf("edge list of local:\n");
+        edge_local_num=g[i]->edge_num-g[i]->edge_duplicate_num;
+        checkvalue_d(g[i]->edge_local_src,g[i]->edge_local_dst,edge_local_num);
 	}
 }
 
