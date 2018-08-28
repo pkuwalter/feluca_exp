@@ -286,7 +286,7 @@ void Gather_result_pr(
 }
 
 /* PageRank algorithm on GPU */
-void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_degree, int *copy_num, int **position_id)
+void pr_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out_degree, int *copy_num, int **position_id)
 {
 	printf("PageRank is running on GPU...............\n");
 	printf("Start malloc edgelist...\n");

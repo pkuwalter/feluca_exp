@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     int *value_cpu;
     int *value_gpu;
     //pr different
-    float *value_gpu_pr;
+    int *value_gpu_pr;
     int *out_degree;
 
 	if(argc<8)
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     //free(g);
     free(value_gpu);
 
-	value_gpu_pr=(float *)malloc(sizeof(float)*(vertex_num+1));
+	value_gpu_pr=(int *)malloc(sizeof(int)*(vertex_num+1));
 	out_degree=(int *)malloc(sizeof(int)*(vertex_num+1));
     origin_g=read_graph_edges_again_to_csr(filename_origin,edge_num,vertex_num);
     
