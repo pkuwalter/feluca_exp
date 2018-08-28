@@ -127,7 +127,7 @@ void merge_colors_on_cpu(
 				{
 					color_gpu[i] = h_add_color[j][i];  
 				}
-				
+
 				/**************************
 				int num_undone = std::count(uncolored, uncolored + vertex_num, 1);
 				
@@ -170,6 +170,12 @@ void Gather_result_colors(
 		{
 			if (copy_num[i]>1)
 			{
+				for (int j = 0; j < gpu_num; ++j)
+				{
+					color_gpu[i] = h_add_color[j][i];  
+				}
+				
+				/*******************
 				new_color=0.0f;
 				for (int j = 0; j < gpu_num; ++j)
 				{
@@ -177,6 +183,7 @@ void Gather_result_colors(
 				}
 				new_color=PAGERANK_COEFFICIENT*new_color+1.0 - PAGERANK_COEFFICIENT;
 				color_gpu[i]=new_color;	
+				*******************/
 			}
 		}
 	}
