@@ -20,30 +20,30 @@ struct graph_h{
 	int *vertex_id;
 
 	/*
-	*   Divide the vertex into two sets.One which has copy is called OUTER, Other called INNER.
-	*   Record the information of OUTER.
+	*   Divide the vertex into two sets.One which has copy is called duplicate, Other called INNER.
+	*   Record the information of duplicate.
 	*/
-	/* edge_outer_src[e] is the source vertex of Edge e, when the destination vertex is outer*/
-	int *edge_outer_src;
-	/* edge_outer_dst[e] is the destination vertex of Edge e, when the destination vertex is outer*/
-	int *edge_outer_dst;
+	/* edge_duplicate_src[e] is the source vertex of Edge e, when the destination vertex is duplicate*/
+	int *edge_duplicate_src;
+	/* edge_duplicate_dst[e] is the destination vertex of Edge e, when the destination vertex is duplicate*/
+	int *edge_duplicate_dst;
 	/* edge_inner_src[e] is the source vertex of Edge e, when the destination vertex is inner*/
 	int *edge_inner_src;
 	/* edge_inner_dst[e] is the destition vertex of Edge e, when the destination vertex is inner*/
 	int *edge_inner_dst;
-	int vertex_outer_num;
-	/*  The edge list whose source or destination vertex is OUTER should be processed firstly */
-	int edge_outer_num;
-	/*  The vertex_inner_id record the id set of OUTER vertex which be processed in this machine */
+	int vertex_duplicate_num;
+	/*  The edge list whose source or destination vertex is duplicate should be processed firstly */
+	int edge_duplicate_num;
+	/*  The vertex_inner_id record the id set of duplicate vertex which be processed in this machine */
 	/* No need */
-	int *vertex_outer_id;          
+	int *vertex_duplicate_id;          
 };
 typedef struct graph_h Graph;
 
 struct graph_d
 {
-	int * d_edge_outer_src;
-	int * d_edge_outer_dst;
+	int * d_edge_duplicate_src;
+	int * d_edge_duplicate_dst;
 	int * d_edge_inner_src;
 	int * d_edge_inner_dst;
 	int * d_value;
@@ -76,11 +76,11 @@ void read_graph_edges(char *  filename, Graph ** g, int gpu_num,int *copy_num);
 /* Read Graph **g to store the max_part_vertex_num and max_part_edge_num which be needed in DataSize *dsize*/
 void read_graph_size(Graph **g, DataSize *dsize, int gpu_num);
 
-/* Record the max size of outer edge lists in GPUs which is used for determining the block size */
-int max_num_outer_edge(Graph **g, int gpu_num);
+/* Record the max size of duplicate edge lists in GPUs which is used for determining the block size */
+int max_num_duplicate_edge(Graph **g, int gpu_num);
 
-/* Record the min size of outer edge lsits in GPUs which is used for determining the block size */
-int min_num_outer_edge(Graph **g, int gpu_num);
+/* Record the min size of duplicate edge lsits in GPUs which is used for determining the block size */
+int min_num_duplicate_edge(Graph **g, int gpu_num);
 
 /* Do not think about preprocesing time */
 /* The following functions just are used to [algorithm]_cpu() to check the correctness. */
