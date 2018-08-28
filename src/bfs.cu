@@ -126,7 +126,7 @@ static __global__ void  bfs_kernel_duplicate(
 		}
 	}
 }
-static __global__ void bfs_kernel_inner(  
+static __global__ void bfs_kernel_local(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
@@ -267,7 +267,7 @@ void Gather_result(
 #pragma omp parallel private(j)
 	for (int i = 0; i < gpu_num; ++i)
 	{
-		//		int *edge_dest=g[i]->edge_inner_dst;
+		//		int *edge_dest=g[i]->edge_local_dst;
 		//	int size=g[i]->edge_num-g[i]->edge_duplicate_num;
 		id=omp_get_thread_num(); 
 		for (j = id; j <vertex_num	; j=j+NUM_THREADS)
@@ -289,8 +289,8 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	int **h_value=(int **)malloc(sizeof(int *)* gpu_num);
 	int **h_flag=(int **)malloc(sizeof(int *)*gpu_num);
 	int vertex_num=dsize->vertex_num;
-	int **d_edge_inner_src=(int **)malloc(sizeof(int *)*gpu_num);
-	int **d_edge_inner_dst=(int **)malloc(sizeof(int *)*gpu_num);
+	int **d_edge_local_src=(int **)malloc(sizeof(int *)*gpu_num);
+	int **d_edge_local_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_duplicate_src=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_duplicate_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
@@ -332,11 +332,11 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	cudaEvent_t tmp_start,tmp_stop;
 	stream=(cudaStream_t **)malloc(gpu_num*sizeof(cudaStream_t*));
 
-	cudaEvent_t * start_duplicate,*stop_duplicate,*start_inner,*stop_inner,*start_asyn,*stop_asyn,*start,*stop;
+	cudaEvent_t * start_duplicate,*stop_duplicate,*start_local,*stop_local,*start_asyn,*stop_asyn,*start,*stop;
 	start_duplicate=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	stop_duplicate=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
-	start_inner=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
-	stop_inner=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
+	start_local=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
+	stop_local=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	start_asyn=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	stop_asyn=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
 	start=(cudaEvent_t *)malloc(gpu_num*sizeof(cudaEvent_t));
@@ -348,8 +348,8 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 		stream[i]=(cudaStream_t *)malloc((iterate_in_duplicate+1)*sizeof(cudaStream_t));
 		HANDLE_ERROR(cudaEventCreate(&start_duplicate[i],0));
 		HANDLE_ERROR(cudaEventCreate(&stop_duplicate[i],0));
-		HANDLE_ERROR(cudaEventCreate(&start_inner[i],0));
-		HANDLE_ERROR(cudaEventCreate(&stop_inner[i],0));  
+		HANDLE_ERROR(cudaEventCreate(&start_local[i],0));
+		HANDLE_ERROR(cudaEventCreate(&stop_local[i],0));  
 		HANDLE_ERROR(cudaEventCreate(&start_asyn[i],0));
 		HANDLE_ERROR(cudaEventCreate(&stop_asyn[i],0));
 		HANDLE_ERROR(cudaEventCreate(&start[i],0));
@@ -368,7 +368,7 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	{
 		cudaSetDevice(i);
 		int out_size=g[i]->edge_duplicate_num;
-		int inner_size=g[i]->edge_num - out_size;
+		int local_size=g[i]->edge_num - out_size;
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_duplicate_src[i],sizeof(int)*out_size));
 		HANDLE_ERROR(cudaMalloc((void **)&d_edge_duplicate_dst[i],sizeof(int)*out_size));
@@ -393,10 +393,10 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 		}
 
 
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_inner_src[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMalloc((void **)&d_edge_inner_dst[i],sizeof(int)*inner_size));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_src[i],sizeof(int)*local_size));
+		HANDLE_ERROR(cudaMalloc((void **)&d_edge_local_dst[i],sizeof(int)*local_size));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_src[i],(void *)g[i]->edge_local_src,sizeof(int)*local_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_local_dst[i],(void *)g[i]->edge_local_dst,sizeof(int)*local_size,cudaMemcpyHostToDevice,stream[i][iterate_in_duplicate]));
 
 		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
@@ -408,26 +408,26 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	printf("Malloc is finished!\n");
 
 	/* Before While: Time Initialization */
-	float *duplicate_compute_time,*inner_compute_time,*compute_time,*total_compute_time,*extract_bitmap_time;
+	float *duplicate_compute_time,*local_compute_time,*compute_time,*total_compute_time,*extract_bitmap_time;
 	float gather_time=0.0;
 	float cpu_gather_time=0.0;
 	float total_time=0.0;
 	float record_time=0.0;
 	duplicate_compute_time=(float *)malloc(sizeof(float)*gpu_num);
-	inner_compute_time=(float *)malloc(sizeof(float)*gpu_num);
+	local_compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	total_compute_time=(float *)malloc(sizeof(float)*gpu_num);
 	extract_bitmap_time=(float *)malloc(sizeof(float)*gpu_num);
 
 	memset(duplicate_compute_time,0,sizeof(float)*gpu_num);
-	memset(inner_compute_time,0,sizeof(float)*gpu_num);
+	memset(local_compute_time,0,sizeof(float)*gpu_num);
 	memset(compute_time,0,sizeof(float)*gpu_num);
 
 
 	/* Before While: Variable Initialization */
 	int flag=0;
 	int step=1;
-	int inner_edge_num=0;
+	int local_edge_num=0;
 
 #ifdef PRINT_CHECK
 	for (int i = 0; i < gpu_num; ++i)
@@ -445,10 +445,10 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 		{
 			printf("( %d, %d )\t",g[i]->edge_duplicate_src[j],g[i]->edge_duplicate_dst[j]);
 		}
-		printf("\nInner_edgelist\n");
+		printf("\nlocal_edgelist\n");
 		for (int j = 0; j < g[i]->edge_num- g[i]->edge_duplicate_num; ++j)
 		{
-			printf("( %d, %d )\t",g[i]->edge_inner_src[j],g[i]->edge_inner_dst[j]);
+			printf("( %d, %d )\t",g[i]->edge_local_src[j],g[i]->edge_local_dst[j]);
 		}
 		printf("\n");
 	}
@@ -527,25 +527,25 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 			printf("\n\n");
 #endif
 
-			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_duplicate]));
-			//inner+flag
-			inner_edge_num=g[i]->edge_num-g[i]->edge_duplicate_num;
-			if (inner_edge_num>0)
+			HANDLE_ERROR(cudaEventRecord(start_local[i], stream[i][iterate_in_duplicate]));
+			//local+flag
+			local_edge_num=g[i]->edge_num-g[i]->edge_duplicate_num;
+			if (local_edge_num>0)
 			{
-				bfs_kernel_inner<<<208,128,0,stream[i][iterate_in_duplicate]>>>(
-						inner_edge_num,
-						d_edge_inner_src[i],
-						d_edge_inner_dst[i],
+				bfs_kernel_local<<<208,128,0,stream[i][iterate_in_duplicate]>>>(
+						local_edge_num,
+						d_edge_local_src[i],
+						d_edge_local_dst[i],
 						d_value[i],
 						step,
 						d_flag[i]);			
 				HANDLE_ERROR(cudaMemcpyAsync(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost,stream[i][iterate_in_duplicate]));	    
 			}
-			HANDLE_ERROR(cudaEventRecord(stop_inner[i],stream[i][iterate_in_duplicate]));
+			HANDLE_ERROR(cudaEventRecord(stop_local[i],stream[i][iterate_in_duplicate]));
 
 
 #ifdef PRINT_CHECK_1
-			printf("The value after bfs_inner_kernel\n");
+			printf("The value after bfs_local_kernel\n");
 			HANDLE_ERROR(cudaMemcpy(h_value[i],d_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
 			HANDLE_ERROR(cudaMemcpy(h_bitmap[i],d_bitmap[i],sizeof(int)*(bitmap_len*iterate_in_duplicate),cudaMemcpyDeviceToHost));
 			HANDLE_ERROR(cudaMemcpy(h_flag[i], d_flag[i],sizeof(int),cudaMemcpyDeviceToHost));
@@ -665,21 +665,21 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 		{
 			cudaSetDevice(i);
 			HANDLE_ERROR(cudaEventSynchronize(stop_duplicate[i]));
-			HANDLE_ERROR(cudaEventSynchronize(stop_inner[i]));
+			HANDLE_ERROR(cudaEventSynchronize(stop_local[i]));
 			HANDLE_ERROR(cudaEventSynchronize(stop_asyn[i]));
 
 			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_duplicate[i], stop_duplicate[i]));
 			duplicate_compute_time[i]+=record_time;
-			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_inner[i], stop_inner[i]));  
-			inner_compute_time[i]+=record_time;
+			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_local[i], stop_local[i]));  
+			local_compute_time[i]+=record_time;
 			HANDLE_ERROR(cudaEventElapsedTime(&record_time, start_asyn[i], stop_asyn[i]));  
 			extract_bitmap_time[i]+=record_time;
-			total_compute_time[i]=duplicate_compute_time[i]+extract_bitmap_time[i]-inner_compute_time[i]>0?(duplicate_compute_time[i]+extract_bitmap_time[i]):inner_compute_time[i];
+			total_compute_time[i]=duplicate_compute_time[i]+extract_bitmap_time[i]-local_compute_time[i]>0?(duplicate_compute_time[i]+extract_bitmap_time[i]):local_compute_time[i];
 		}		
 	}while(flag && step<1000);
 
 
-	//Todo to get the true value of inner vertice and duplicate vertice
+	//Todo to get the true value of local vertice and duplicate vertice
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		cudaSetDevice(i);
@@ -710,7 +710,7 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	{
 		printf("GPU %d\n",i);
 		printf("Duplicate_Compute_Time(include pre-stage):  %.3f ms\n", duplicate_compute_time[i]/step);
-		printf("Inner_Compute_Time:                     %.3f ms\n", inner_compute_time[i]/step);
+		printf("local_Compute_Time:                     %.3f ms\n", local_compute_time[i]/step);
 		printf("Total Compute_Time                      %.3f ms\n", total_compute_time[i]/step);
 		printf("Extract_Bitmap_Time                     %.3f ms\n", extract_bitmap_time[i]/step);
 	}
@@ -727,8 +727,8 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 		HANDLE_ERROR(cudaEventDestroy(stop[i]));
 		HANDLE_ERROR(cudaFree(d_edge_duplicate_src[i]));
 		HANDLE_ERROR(cudaFree(d_edge_duplicate_dst[i]));
-		HANDLE_ERROR(cudaFree(d_edge_inner_src[i]));
-		HANDLE_ERROR(cudaFree(d_edge_inner_dst[i]));
+		HANDLE_ERROR(cudaFree(d_edge_local_src[i]));
+		HANDLE_ERROR(cudaFree(d_edge_local_dst[i]));
 		HANDLE_ERROR(cudaFree(d_value[i]));
 		HANDLE_ERROR(cudaFree(d_flag[i]));
 
@@ -740,7 +740,7 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	}
 
 	free(duplicate_compute_time);
-	free(inner_compute_time);
+	free(local_compute_time);
 	free(compute_time);
 }
 
