@@ -33,7 +33,7 @@ static __global__ void  pr_kernel_outer(
 		const int * const edge_dest,
 		const int * const out_degree,
 		float * const values,
-		float * const add_values)
+		int * const un_colored)
 {
 	// total thread number & thread index of this thread
 	int n = blockDim.x * gridDim.x;
@@ -46,6 +46,7 @@ static __global__ void  pr_kernel_outer(
 		if(values[src] == values[dest])
 		{
 			values[dest] = values[src] + 1;
+			uncolored[dest] = 1;
 		}
 		/******************
 		if (out_degree[src])
@@ -57,15 +58,13 @@ static __global__ void  pr_kernel_outer(
 	}
 }
 
-
-
 static __global__ void pr_kernel_inner(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
 		float * const values,
-		float * const add_values,
+		int * const d_uncolored,
 		int * const continue_flag)
 {
 
@@ -81,6 +80,7 @@ static __global__ void pr_kernel_inner(
 		if (values[src] == values[dest])
 		{
 			values[dest] = values[src] + 1;
+			d_uncolored[dest] = 1;
 		}
 		/*************
 		if (out_degree[src])
@@ -107,11 +107,61 @@ static __global__ void pr_kernel_inner(
 }
 
 
+/*****************************************
+static __global__ void pr_kernel_inner(  
+		const int edge_num,
+		const int * const edge_src,
+		const int * const edge_dest,
+		const int * const out_degree,
+		float * const values,
+		float * const add_values,
+		int * const continue_flag)
+{
+
+	// total thread number & thread index of this thread
+	int n = blockDim.x * gridDim.x;
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	//int flag=0;
+	//float sum=0.0f;
+	for (int i = index; i < edge_num; i+=n)
+	{
+		int src=edge_src[i];
+		int dest=edge_dest[i];
+		if (values[src] == values[dest])
+		{
+			values[dest] = values[src] + 1;
+		}
+	
+		//if (out_degree[src])
+		//{
+		//	sum=values[src]/out_degree[src];
+		//    atomicAdd(&add_values[dest],sum);
+		//}
+		
+	}
+	__syncthreads();
+	//check
+	
+	//float new_value=0.0f;
+	//for (int i = index; i < edge_num; i+=n)
+	//{
+	//	new_value=add_values[edge_dest[i]]*PAGERANK_COEFFICIENT+1.0f - PAGERANK_COEFFICIENT;
+	//	if (fabs(new_value-values[edge_dest[i]])>PAGERANK_THRESHOLD)
+	//	{
+	//		flag=1;
+	//	}
+	//}
+	//if (flag==1)  *continue_flag=1;
+	
+}
+*******************************/
+
+
 static __global__ void kernel_extract_values(
 		int const edge_num,
 		int * const edge_dest,
 		float * const add_value,
-		float * const value
+		int * const value
 		)
 {
 	int n = blockDim.x * gridDim.x;
@@ -124,7 +174,35 @@ static __global__ void kernel_extract_values(
 	} 
 }
 
+void merge_value_on_cpu(
+		int const vertex_num, 
+		int const gpu_num, 
+		int * const  *uncolored, 
+		float * const color_gpu , 
+		int *copy_num, 
+		int flag)
+{
+	int i,id;
+	//float new_value=0.0f;
+	omp_set_num_threads(NUM_THREADS);	
+#pragma omp parallel private(i)
+	{
+		id=omp_get_thread_num(); 
+		for (i = id; i < vertex_num; i=i+NUM_THREADS)
+		{
+			if (copy_num[i]>1)
+			{
+				
+				float percentage = 0.05;
+				if(percentage < uncolored / vertex_num)
+					break;
+				
+			}		
+		}
+	}
+}
 
+/***********************************************
 void merge_value_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
@@ -143,20 +221,26 @@ void merge_value_on_cpu(
 		{
 			if (copy_num[i]>1)
 			{
+				//如何设置迭代终止条件
+
+
+				
 				new_value=0.0f;
 				for (int j = 0; j < gpu_num; ++j)
 				{
 					new_value+=h_add_value[j][i];  
 				}
+				
 				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
 				if(fabs(new_value- value_gpu[i]>PAGERANK_THRESHOLD))
 					//flag=1;
 				value_gpu[i]=new_value;
+				
 			}		
 		}
-
 	}
 }
+*******************************************************************/
 
 void Gather_result_pr(
 		int const vertex_num, 
@@ -204,7 +288,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	float **h_value=(float **)malloc(sizeof(float *)* gpu_num);
 	float **h_add_value=(float **)malloc(sizeof(float *)*gpu_num);
 
-	float **d_value=(float **)malloc(sizeof(float *)*gpu_num);
+	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
 	//pr different
 	//float **d_tem_value=(float **)malloc(sizeof(float *)*gpu_num);
 	float **d_add_value=(float **)malloc(sizeof(float *)*gpu_num);
@@ -300,8 +384,8 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_src[i],(void *)g[i]->edge_inner_src,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_edge_inner_dst[i],(void *)g[i]->edge_inner_dst,sizeof(int)*inner_size,cudaMemcpyHostToDevice,stream[i][iterate_in_outer]));
 
-		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(float)*(vertex_num+1)));
-		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(float)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
+		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
+		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 		//pr different
 		HANDLE_ERROR(cudaMalloc((void **)&d_add_value[i],sizeof(float)*(vertex_num+1)));
 		//"memset only works for bytes. If you're using the runtime API, you can use thrust::fill() instead"
