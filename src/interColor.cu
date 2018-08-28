@@ -90,11 +90,11 @@ static __global__ void coloring_kernel_local(
 }
 
 
-static __global__ void kernel_extract_values(
+static __global__ void kernel_extract_color(
 		int const edge_num,
 		int * const edge_dest,
-		int * const add_value,
-		int * const value
+		int * const add_color,
+		int * const colors
 		)
 {
 	int n = blockDim.x * gridDim.x;
@@ -102,12 +102,12 @@ static __global__ void kernel_extract_values(
 	for (int i = index; i < edge_num; i+=n)
 	{
 		int dest=edge_dest[i];
-		value[dest]=add_value[dest];
-		add_value[dest]=1;
+		colors[dest]=add_color[dest];
+		add_color[dest]=1;
 	} 
 }
 
-void merge_value_on_cpu(
+void merge_colors_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const * h_add_value, 
@@ -394,7 +394,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 
 		//merge bitmap on gpu
 		double t1=omp_get_wtime();
-		merge_value_on_cpu(vertex_num, gpu_num, h_add_value, value_gpu, copy_num, uncolored, flag);
+		merge_colors_on_cpu(vertex_num, gpu_num, h_add_value, value_gpu, copy_num, uncolored, flag);
 		double t2=omp_get_wtime();
 		record_time=(t2-t1)*1000;
 		gather_time+=record_time;
@@ -408,7 +408,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			HANDLE_ERROR(cudaEventRecord(start_asyn[i], stream[i][0]));
 			// d_value copy to the value of outer vertices
 
-			kernel_extract_values<<<208,128,0,stream[i][0]>>>
+			kernel_extract_color<<<208,128,0,stream[i][0]>>>
 				(  
 				 g[i]->edge_outer_num,
 				 d_edge_outer_dst[i],
