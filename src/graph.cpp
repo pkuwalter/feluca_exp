@@ -14,9 +14,6 @@
 
 /*
 Name: GRAPH_H
-Copyright: 2016
-Author: Xuan Luo
-Date: 13/01/16 16:24
 Description: Using the VGP to partition the graph.
 This file is used to read the result of VGP.
 
