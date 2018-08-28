@@ -37,7 +37,7 @@ void print_error() {
 void coding(Graph **g, int gpu_num)
 {
 	int vertex_num_part;
-	int edge_duplicate_num_part,edge_inner_num_part;
+	int edge_duplicate_num_part,edge_local_num_part;
 	hash_map<int ,int> map_id;
 	hash_map<int, int>::iterator ite_map;
     typedef pair <int, int> Int_Pair;	
@@ -48,7 +48,7 @@ void coding(Graph **g, int gpu_num)
 		printf("gpu %d is coding...\n",i);
 		vertex_num_part=g[i]->vertex_num;
 		edge_duplicate_num_part=g[i]->edge_duplicate_num;
-		edge_inner_num_part=g[i]->edge_num - edge_duplicate_num_part;
+		edge_local_num_part=g[i]->edge_num - edge_duplicate_num_part;
 		/* malloc table*/
 
 		//pragma omp parallel for
@@ -76,21 +76,21 @@ void coding(Graph **g, int gpu_num)
 
 		}
 		//pragma omp parallel for
-		for(int j=0;j<edge_inner_num_part;j++)
+		for(int j=0;j<edge_local_num_part;j++)
 		{
 			/*src vertex*/
-			tmp_id=g[i]->edge_inner_src[j];
+			tmp_id=g[i]->edge_local_src[j];
 			ite_map=map_id.find(tmp_id);
 			if(ite_map==map_id.end()) 
 				print_error();
-			g[i]->edge_inner_src[j]=ite_map->second;
+			g[i]->edge_local_src[j]=ite_map->second;
 
 			/* destination vertex */
-			tmp_id=g[i]->edge_inner_dst[j];
+			tmp_id=g[i]->edge_local_dst[j];
 			ite_map=map_id.find(tmp_id);
 			if(ite_map==map_id.end()) 
 				print_error();
-			g[i]->edge_inner_dst[j]=ite_map->second;
+			g[i]->edge_local_dst[j]=ite_map->second;
 		}
 	}
 }
