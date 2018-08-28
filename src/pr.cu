@@ -120,7 +120,7 @@ static __global__ void kernel_extract_values(
 	{
 		int dest=edge_dest[i];
 		value[dest]=add_value[dest];
-		add_value[dest]=0.0;
+		add_value[dest]=1;
 	} 
 }
 
@@ -417,15 +417,15 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 			HANDLE_ERROR(cudaMemcpyAsync(d_add_value[i], value_gpu,sizeof(float)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 			HANDLE_ERROR(cudaEventRecord(start_asyn[i], stream[i][0]));
 			// d_value copy to the value of outer vertices
-			/*****************************
+
 			kernel_extract_values<<<208,128,0,stream[i][0]>>>
 				(  
 				 g[i]->edge_outer_num,
 				 d_edge_outer_dst[i],
 				 d_add_value[i],
 				 d_value[i]
-				);		
-				**********************************/
+				);
+
 			HANDLE_ERROR(cudaEventRecord(stop_asyn[i], stream[i][0]));
 		}
 
