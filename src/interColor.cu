@@ -43,7 +43,7 @@ static __global__ void  pr_kernel_dumplcate(
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
-		const int * const out_degree,
+		//const int * const out_degree,
 		int * const colors,
 		int * const un_colored)
 {
@@ -67,8 +67,8 @@ static __global__ void pr_kernel_local(
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
-		const int * const out_degree,
-		int * const values,
+		//const int * const out_degree,
+		int * const colors,
 		int * const d_uncolored,
 		int * const continue_flag)
 {
@@ -80,9 +80,9 @@ static __global__ void pr_kernel_local(
 	{
 		int src=edge_src[i];
 		int dest=edge_dest[i];
-		if (values[src] == values[dest])
+		if (colors[src] == colors[dest])
 		{
-			values[dest] = values[src] + 1;
+			colors[dest] = colors[src] + 1;
 			d_uncolored[dest] = 1;
 		}		
 	}
@@ -349,7 +349,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 							outer_per_size,
 							d_edge_outer_src[i]+(j-1)*outer_per_size,
 							d_edge_outer_dst[i]+(j-1)*outer_per_size,
-							d_outdegree[i],
+							//[i],
 							d_value[i],
 							d_add_value[i]);
 					//TODO didn't not realize overlap
@@ -364,7 +364,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						last_outer_per_size[i],
 						d_edge_outer_src[i]+(iterate_in_outer-1)*outer_per_size,
 						d_edge_outer_dst[i]+(iterate_in_outer-1)*outer_per_size,
-						d_outdegree[i],
+						//d_outdegree[i],
 						d_value[i],
 						d_add_value[i]);
 				//TODO didn't not realize 
@@ -382,7 +382,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 						inner_edge_num,
 						d_edge_inner_src[i],
 						d_edge_inner_dst[i],
-						d_outdegree[i],
+						//d_outdegree[i],
 						d_value[i],
 						d_add_value[i],
 						d_flag[i]);			
