@@ -72,8 +72,8 @@ static __global__ void pr_kernel_inner(
 	// total thread number & thread index of this thread
 	int n = blockDim.x * gridDim.x;
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
-	int flag=0;
-	float sum=0.0f;
+	//int flag=0;
+	//float sum=0.0f;
 	for (int i = index; i < edge_num; i+=n)
 	{
 		int src=edge_src[i];
@@ -121,7 +121,8 @@ static __global__ void kernel_extract_values(
 		int dest=edge_dest[i];
 		value[dest]=add_value[dest];
 		add_value[dest]=0.0;
-	}  }
+	} 
+}
 
 
 void merge_value_on_cpu(
@@ -416,6 +417,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 			HANDLE_ERROR(cudaMemcpyAsync(d_add_value[i], value_gpu,sizeof(float)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 			HANDLE_ERROR(cudaEventRecord(start_asyn[i], stream[i][0]));
 			// d_value copy to the value of outer vertices
+			/*****************************
 			kernel_extract_values<<<208,128,0,stream[i][0]>>>
 				(  
 				 g[i]->edge_outer_num,
@@ -423,6 +425,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 				 d_add_value[i],
 				 d_value[i]
 				);		
+				**********************************/
 			HANDLE_ERROR(cudaEventRecord(stop_asyn[i], stream[i][0]));
 		}
 
@@ -506,11 +509,6 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	
 
 	printf("The total color is: %d\n",max_color);
-
-     
-    //num=20-num;
-    printf("Used color numbers:\t%d\n",color_num);
-
 
 
 //	printf("Total time of pr_gpu is %.3f ms\n",total_time);
