@@ -39,7 +39,7 @@
 #endif  // #ifdef __CUDA_RUNTIME_H__    
 
 
-static __global__ void  pr_kernel_outer(  
+static __global__ void  pr_kernel_dumplcate(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
@@ -63,7 +63,7 @@ static __global__ void  pr_kernel_outer(
 	}
 }
 
-static __global__ void pr_kernel_inner(  
+static __global__ void pr_kernel_local(  
 		const int edge_num,
 		const int * const edge_src,
 		const int * const edge_dest,
@@ -138,13 +138,11 @@ void merge_value_on_cpu(
 				{
 					new_value+=h_add_value[j][i];  
 				}
-				
 				new_value=PAGERANK_COEFFICIENT*new_value+1.0 - PAGERANK_COEFFICIENT;
 				if(fabs(new_value- value_gpu[i]>PAGERANK_THRESHOLD))
 					//flag=1;
 				value_gpu[i]=new_value;
-				
-			}		
+			}
 		}
 	}
 }
@@ -347,7 +345,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			{
 				for (int j = 1; j < iterate_in_outer; ++j)
 				{				
-					pr_kernel_outer<<<208,128,0,stream[i][j-1]>>>(
+					pr_kernel_dumplcate<<<208,128,0,stream[i][j-1]>>>(
 							outer_per_size,
 							d_edge_outer_src[i]+(j-1)*outer_per_size,
 							d_edge_outer_dst[i]+(j-1)*outer_per_size,
@@ -362,7 +360,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			last_outer_per_size[i]=g[i]->edge_outer_num-outer_per_size * (iterate_in_outer-1);           
 			if (last_outer_per_size[i]>0 && iterate_in_outer>1  )
 			{
-				pr_kernel_outer<<<208,128,0,stream[i][iterate_in_outer-1]>>>(
+				pr_kernel_dumplcate<<<208,128,0,stream[i][iterate_in_outer-1]>>>(
 						last_outer_per_size[i],
 						d_edge_outer_src[i]+(iterate_in_outer-1)*outer_per_size,
 						d_edge_outer_dst[i]+(iterate_in_outer-1)*outer_per_size,
@@ -380,7 +378,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int* out
 			inner_edge_num=g[i]->edge_num-g[i]->edge_outer_num;
 			if (inner_edge_num>0)
 			{
-				pr_kernel_inner<<<208,128,0,stream[i][iterate_in_outer]>>>(
+				pr_kernel_local<<<208,128,0,stream[i][iterate_in_outer]>>>(
 						inner_edge_num,
 						d_edge_inner_src[i],
 						d_edge_inner_dst[i],
