@@ -743,4 +743,3 @@ void bfs_gpu(Graph **g,int gpu_num,int *value_gpu,DataSize *dsize, int first_ver
 	free(local_compute_time);
 	free(compute_time);
 }
-
