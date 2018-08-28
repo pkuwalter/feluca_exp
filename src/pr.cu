@@ -44,7 +44,7 @@ static __global__ void  pr_kernel_outer(
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
-		float * const values,
+		int * const values,
 		int * const un_colored)
 {
 	// total thread number & thread index of this thread
@@ -75,7 +75,7 @@ static __global__ void pr_kernel_inner(
 		const int * const edge_src,
 		const int * const edge_dest,
 		const int * const out_degree,
-		float * const values,
+		int * const values,
 		int * const d_uncolored,
 		int * const continue_flag)
 {
@@ -172,7 +172,7 @@ static __global__ void pr_kernel_inner(
 static __global__ void kernel_extract_values(
 		int const edge_num,
 		int * const edge_dest,
-		float * const add_value,
+		int * const add_value,
 		int * const value
 		)
 {
@@ -190,7 +190,7 @@ void merge_value_on_cpu(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const  *uncolored, 
-		float * const color_gpu , 
+		int * const color_gpu , 
 		int *copy_num, 
 		int flag)
 {
@@ -259,8 +259,8 @@ void Gather_result_pr(
 		int const vertex_num, 
 		int const gpu_num, 
 		int * const copy_num,
-		float * const  *h_add_value,  
-		float * const value_gpu
+		int * const  *h_add_value,  
+		int * const value_gpu
 		)
 {
 	int i,id;
@@ -298,13 +298,13 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 	int **d_edge_inner_dst=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_outer_src=(int **)malloc(sizeof(int *)*gpu_num);
 	int **d_edge_outer_dst=(int **)malloc(sizeof(int *)*gpu_num);
-	float **h_value=(float **)malloc(sizeof(float *)* gpu_num);
-	float **h_add_value=(float **)malloc(sizeof(float *)*gpu_num);
+	int **h_value=(int **)malloc(sizeof(int *)* gpu_num);
+	int **h_add_value=(int **)malloc(sizeof(int *)*gpu_num);
 
 	int **d_value=(int **)malloc(sizeof(int *)*gpu_num);
 	//pr different
 	//float **d_tem_value=(float **)malloc(sizeof(float *)*gpu_num);
-	float **d_add_value=(float **)malloc(sizeof(float *)*gpu_num);
+	int **d_add_value=(float **)malloc(sizeof(int *)*gpu_num);
 	int **d_outdegree=(int **)malloc(sizeof(int *)*gpu_num);
 
 	int **d_flag=(int **)malloc(sizeof(int *)*gpu_num);
@@ -318,10 +318,10 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 
 	for (int i = 0; i < gpu_num; ++i)
 	{
-		h_value[i]=(float *)malloc(sizeof(float)*(vertex_num+1));
-		h_add_value[i]=(float *)malloc(sizeof(float)*(vertex_num+1));
+		h_value[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
+		h_add_value[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
-		memset(h_value[i],rand() % init_num_colors,sizeof(float)*(vertex_num+1));
+		memset(h_value[i],rand() % init_num_colors,sizeof(int)*(vertex_num+1));
 
 		printf("The Initialization Color is as follow\n");
 		printf("GPU Num\tColor\n");
@@ -400,7 +400,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 		HANDLE_ERROR(cudaMalloc((void **)&d_value[i],sizeof(int)*(vertex_num+1)));
 		HANDLE_ERROR(cudaMemcpyAsync((void *)d_value[i],(void *)h_value[i],sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 		//pr different
-		HANDLE_ERROR(cudaMalloc((void **)&d_add_value[i],sizeof(float)*(vertex_num+1)));
+		HANDLE_ERROR(cudaMalloc((void **)&d_add_value[i],sizeof(int)*(vertex_num+1)));
 		//"memset only works for bytes. If you're using the runtime API, you can use thrust::fill() instead"
 		//HANDLE_ERROR(cudaMemset((void **)&d_add_value[i],0,sizeof(float)*(vertex_num+1)));
 
@@ -479,7 +479,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 			}
 			HANDLE_ERROR(cudaEventRecord(stop_outer[i], stream[i][iterate_in_outer-1]));
 
-            HANDLE_ERROR(cudaMemcpy((void *)(h_add_value[i]),(void *)(d_add_value[i]),sizeof(float)*(vertex_num+1),cudaMemcpyDeviceToHost));
+            HANDLE_ERROR(cudaMemcpy((void *)(h_add_value[i]),(void *)(d_add_value[i]),sizeof(int)*(vertex_num+1),cudaMemcpyDeviceToHost));
 			HANDLE_ERROR(cudaEventRecord(start_inner[i], stream[i][iterate_in_outer]));
 			//inner+flag
 			inner_edge_num=g[i]->edge_num-g[i]->edge_outer_num;
@@ -511,7 +511,7 @@ void pr_gpu(Graph **g,int gpu_num,float *value_gpu,DataSize *dsize, int* out_deg
 		{
 			cudaSetDevice(i);
 			//extract bitmap to the value
-			HANDLE_ERROR(cudaMemcpyAsync(d_add_value[i], value_gpu,sizeof(float)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
+			HANDLE_ERROR(cudaMemcpyAsync(d_add_value[i], value_gpu,sizeof(int)*(vertex_num+1),cudaMemcpyHostToDevice,stream[i][0]));
 			HANDLE_ERROR(cudaEventRecord(start_asyn[i], stream[i][0]));
 			// d_value copy to the value of outer vertices
 
