@@ -1,8 +1,19 @@
-#include<string.h>
 #include<malloc.h>
 #include<stdio.h>
 #include<omp.h>
 #include <thrust/count.h>
+#include <iostream>
+#include <stdlib.h>
+#include <string.h>
+#include <thrust/count.h>
+#include <numeric>
+#include <random>
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+#include <cuda_runtime.h>
+#include <cusparse.h>
+#include <helper_cuda.h>
 
 #include "graph.h"
 #include "timer.h"

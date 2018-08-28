@@ -1,8 +1,14 @@
 
 #include <stdio.h>
 #include <malloc.h>
-#include <stdlib.h> 
 /* The head of strcat()*/
+
+#include <iostream>
+#include <cassert>
+#include <algorithm>
+#include <cuda_runtime.h>
+#include <thrust/count.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "graph.h"
