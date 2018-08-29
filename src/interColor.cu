@@ -97,8 +97,8 @@ static __global__ void kernel_extract_color(
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	for (int i = index; i < edge_num; i+=n)
 	{
-		int dest=edge_dest[i];
-		colors[dest]=add_color[dest];
+		int dest = edge_dest[i];
+		//colors[dest] = add_color[dest];
 		add_color[dest]=1;
 	} 
 }
@@ -125,7 +125,7 @@ void merge_colors_on_cpu(
 				
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					color_gpu[i] = h_add_color[j][i];  
+					//color_gpu[i] = h_add_color[j][i];  
 				}
 
 				/**************************
@@ -172,7 +172,7 @@ void Gather_result_colors(
 			{
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					color_gpu[i] = h_add_color[j][i];  
+					//color_gpu[i] = h_add_color[j][i];  
 				}
 				
 				/*******************
