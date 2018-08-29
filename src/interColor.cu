@@ -113,7 +113,7 @@ void merge_colors_on_cpu(
 		int flag)
 {
 	int i,id;
-	float new_color=0.0f;
+	//float new_color=0.0f;
 	omp_set_num_threads(NUM_THREADS);	
 #pragma omp parallel private(i)
 	{
@@ -125,7 +125,8 @@ void merge_colors_on_cpu(
 				
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					color_gpu[i] = h_add_color[j][i];  
+					if(h_add_color[j][i] < color_gpu[i])
+						color_gpu[i] = h_add_color[j][i];  
 				}
 
 				/**************************
