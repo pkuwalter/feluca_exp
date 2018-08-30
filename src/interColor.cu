@@ -226,14 +226,14 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		h_add_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
-		memset(h_color[i],rand() % init_num_colors,sizeof(int)*(vertex_num+1));
+		memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
 
-		printf("The Initialization Color is as follow\n");
-		printf("GPU Num\tColor\n");
+		//printf("The Initialization Color is as follow\n");
+		//printf("GPU Num\tColor\n");
 
 		for(int j =0; j < vertex_num; j++)
 		{
-			printf("%d\t%d\n",i,h_color[i][j]);
+			printf("GPU Num:%d\tColor:%d\n",i,h_color[i][j]);
 		}
 
 		h_flag[i]=(int *)malloc(sizeof(int));
@@ -491,7 +491,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 
 		for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
 	    {
-	    	printf("%d\t%d\t%d\n",i,countcolorbegin,h_color[i][countcolorbegin]);
+	    	//printf("%d\t%d\t%d\n",i,countcolorbegin,h_color[i][countcolorbegin]);
 
 	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
 	            
