@@ -45,7 +45,7 @@ void coding(Graph **g, int gpu_num)
 	for (int i = 0; i <gpu_num ; ++i)
 	{
 		map_id.clear();
-		printf("gpu %d is coding...\n",i);
+		printf("gpu %d is loading...\n",i);
 		vertex_num_part=g[i]->vertex_num;
 		edge_duplicate_num_part=g[i]->edge_duplicate_num;
 		edge_local_num_part=g[i]->edge_num - edge_duplicate_num_part;
