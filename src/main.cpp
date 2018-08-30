@@ -99,11 +99,11 @@ int main(int argc, char *argv[])
     
     */
 
-    value_gpu=(int *)malloc(sizeof(int)*(vertex_num+1));
-    bfs_gpu(g,gpu_num,value_gpu,dsize,first_vertex,copy_num,position_id);
-    print_bfs_values(value_gpu,vertex_num+1);
+    //value_gpu=(int *)malloc(sizeof(int)*(vertex_num+1));
+    //bfs_gpu(g,gpu_num,value_gpu,dsize,first_vertex,copy_num,position_id);
+    //print_bfs_values(value_gpu,vertex_num+1);
     //free(g);
-    free(value_gpu);
+    //free(value_gpu);
 
 	value_gpu_pr=(int *)malloc(sizeof(int)*(vertex_num+1));
 	out_degree=(int *)malloc(sizeof(int)*(vertex_num+1));
