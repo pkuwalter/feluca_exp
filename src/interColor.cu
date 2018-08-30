@@ -221,38 +221,13 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	int *last_duplicate_per_size=(int *)malloc(sizeof(int)*gpu_num);
 	memset(last_duplicate_per_size,0,sizeof(int)*gpu_num);
 
-	int **array;
-	array=new int *[10];
-	for(int i=0;i<10;i++)
-	{
-         array[i]=new int [5];
-
-        memset(array[i],rand()%init_num_colors,5*sizeof(int));
-
-	}
-
-	for(int i = 0; i < 10; i++){
-		for (int j = 0; j < 5; j++)
-		{
-			printf("This is a test array:%d\n",array[i][j]);
-		}
-	}
-
-	int **colorset = (int **)malloc(sizeof(int *)* 3);
-	for(int i = 0; i < 3; i++){
-		memset(colorset[i],rand()%init_num_colors,sizeof(int)*100);
-
-		for (int j = 0; j < 100; j++){
-			printf("we are test:%d\t%d\n",colorset[i],rand()%init_num_colors);
-		}
-	}
 
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		h_add_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
-		memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
+		//memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
 		//memset(h_color[i],0,sizeof(int)*(vertex_num+1));
 
 		//printf("The Initialization Color is as follow\n");
@@ -260,7 +235,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 
 		for(int j =0; j < vertex_num; j++)
 		{
-			printf("GPU Num:%d\tColor:%d\tInitValue:%d\n",i,h_color[i][j],rand()%init_num_colors);
+			h_color[i][j]=rand()%init_num_colors;
 		}
 
 		h_flag[i]=(int *)malloc(sizeof(int));
