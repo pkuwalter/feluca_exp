@@ -221,6 +221,15 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	int *last_duplicate_per_size=(int *)malloc(sizeof(int)*gpu_num);
 	memset(last_duplicate_per_size,0,sizeof(int)*gpu_num);
 
+	int **colorset;
+	for(int i = 0; i < 3; i++){
+		memset(colorset[i],rand()%init_num_colors,sizeof(int)*100);
+
+		for (int j = 0; j < 100; j++){
+			printf("we are test:%d\n",colorset[i][j]);
+		}
+	}
+
 	for (int i = 0; i < gpu_num; ++i)
 	{
 		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
