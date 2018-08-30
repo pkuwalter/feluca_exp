@@ -513,8 +513,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	printf("The total color is: %d\n",max_color);
 
 
-//	printf("Total time of pr_gpu is %.3f ms\n",total_time);
-	printf("Elapsed time of pr_gpu is %.3f ms\n", total_time/(step));
+	printf("Total time of coloring on GPU is %.3f ms\n",total_time);
+	printf("Elapsed time of coloring on GPU is %.3f ms\n", total_time/(step));
 	printf("-------------------------------------------------------\n");
 	printf("Detail:\n");
 	printf("\n");
