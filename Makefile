@@ -2,10 +2,10 @@ INCLUDES=/usr/local/cuda/samples/common/inc/
 CC=g++ -std=c++11
 NVCC=nvcc -std=c++11 -I ${INCLUDES}
 
-exp : src/main.cpp graph.o check.o graph.o check.o coding.o bfs.o interColor.o
-	${NVCC} -Xcompiler -fopenmp src/main.cpp obj/graph.o obj/check.o obj/coding.o obj/bfs.o obj/interColor.o -o exp
+exp : src/main.cpp graph.o check.o graph.o check.o coding.o interColor.o
+	${NVCC} -Xcompiler -fopenmp src/main.cpp obj/graph.o obj/check.o obj/coding.o obj/interColor.o -o exp
 
-graph.o check.o graph.o check.o coding.o bfs.o: | obj
+graph.o check.o graph.o check.o coding.o: | obj
 
 obj:
 	mkdir -p obj
@@ -18,9 +18,6 @@ check.o : src/check.cpp src/graph.h
 
 coding.o : src/codingIndex.cpp src/graph.h
 	g++ -c src/codingIndex.cpp -o obj/coding.o 
-
-bfs.o : src/bfs.cu src/graph.h src/timer.h
-	${NVCC} -c -Xcompiler -fopenmp -o obj/bfs.o src/bfs.cu
 
 interColor.o : src/interColor.cu src/graph.h src/timer.h
 	${NVCC} -c -Xcompiler -fopenmp -o obj/interColor.o src/interColor.cu   
