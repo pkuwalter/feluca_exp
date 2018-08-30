@@ -487,13 +487,13 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	int countcolorbegin = 0;
 	int countcolorsecond = 0;
 	max_color = color_num[0];
-	//printf("The GPU number \t The vertices\t The color Value\n");
+	printf("The GPU number \t The vertices\t The color Value\n");
 	for (int i =0; i < gpu_num; i++)
 	{
 
 		for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
 	    {
-	    	//printf("%d\t%d\t%d\n",i,countcolorbegin,h_color[i][countcolorbegin]);
+	    	printf("%d\t%d\t%d\n",i,countcolorbegin,h_color[i][countcolorbegin]);
 
 	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
 	            
