@@ -234,7 +234,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 
 		for(int j =0; j < vertex_num; j++)
 		{
-			printf("GPU Num:%d\tColor:%d\n",i,h_color[i][j]);
+			printf("GPU Num:%d\tColor:%d\tInitValue:%d\n",i,h_color[i][j],rand()%init_num_colors);
 		}
 
 		h_flag[i]=(int *)malloc(sizeof(int));
