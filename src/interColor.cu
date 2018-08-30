@@ -226,7 +226,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		memset(colorset[i],rand()%init_num_colors,sizeof(int)*100);
 
 		for (int j = 0; j < 100; j++){
-			printf("we are test:%d\n",colorset[i][j]);
+			printf("we are test:%d\t%d\n",colorset[i][j],rand()%init_num_colors);
 		}
 	}
 
