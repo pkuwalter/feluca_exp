@@ -98,7 +98,7 @@ static __global__ void kernel_extract_color(
 	for (int i = index; i < edge_num; i+=n)
 	{
 		int dest = edge_dest[i];
-		colors[dest] = add_color[dest];
+		colors[dest] = add_color[dest];//this operation lead to lots of colors
 		add_color[dest]=1;
 	} 
 }
