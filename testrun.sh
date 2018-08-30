@@ -6,4 +6,4 @@ make
 
 datapath=/vpublic01/frog/zhengzhigao/feluca4big/example
 
-./vpublic01/frog/zhengzhigao/feluca_exp/exp ${datapath}/amazon/amazon.vertices ${datapath}/amazon/amazon.edges 735292 3523247 539587 1761624 4
+./exp ${datapath}/amazon/amazon.vertices ${datapath}/amazon/amazon.edges 735292 3523247 539587 1761624 4
