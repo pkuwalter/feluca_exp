@@ -1,4 +1,9 @@
 git pull
+rm -rf ./src/*.o  ./exp  
+rm -rf obj
 make clean
 make
-./exp example/amazon/amazon.vertices example/amazon/amazon.edges 735292 3523247 539587 1761624 4
+
+datapath=/vpublic01/frog/zhengzhigao/feluca4big/example
+
+/vpublic01/frog/zhengzhigao/feluca_exp ./exp ${datapath}/amazon/amazon.vertices ${datapath}/amazon/amazon.edges 735292 3523247 539587 1761624 4
