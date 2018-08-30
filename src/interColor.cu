@@ -227,8 +227,8 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		h_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		h_add_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
-		//memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
-		memset(h_color[i],0,sizeof(int)*(vertex_num+1));
+		memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
+		//memset(h_color[i],0,sizeof(int)*(vertex_num+1));
 
 		//printf("The Initialization Color is as follow\n");
 		//printf("GPU Num\tColor\n");
