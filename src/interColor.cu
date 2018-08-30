@@ -493,10 +493,12 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 
 		for(countcolorbegin=0;countcolorbegin<vertex_num;countcolorbegin++)
 	    {
-	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],h_color[i][countcolorbegin]);	    	
+	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],g[i]->edge_local_src[countcolorbegin]->value);	    	
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_dst[countcolorbegin],h_color[i][countcolorbegin]);
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_src[countcolorbegin],h_color[i][countcolorbegin]);
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_dst[countcolorbegin],h_color[i][countcolorbegin]);
+
+	    	g[i]->edge_local_dst->value
 
 	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
 	            
