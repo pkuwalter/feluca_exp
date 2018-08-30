@@ -479,13 +479,13 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	}
 	total_time=total_time_n>gather_time?total_time_n:gather_time;
 
-	printf("The color value is as follow\n");
+	//printf("The color value is as follow\n");
 	int color_num[4] = {0,0,0,0};
 	int max_color = 0;
 	int countcolorbegin = 0;
 	int countcolorsecond = 0;
 	max_color = color_num[0];
-	printf("The GPU number \t The vertices\t The color Value\n");
+	//printf("The GPU number \t The vertices\t The color Value\n");
 	for (int i =0; i < gpu_num; i++)
 	{
 
@@ -513,7 +513,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	printf("The total color is: %d\n",max_color);
 
 
-	printf("Total time of coloring on GPU is %.3f ms\n",total_time);
+	//printf("Total time of coloring on GPU is %.3f ms\n",total_time);
 	printf("Elapsed time of coloring on GPU is %.3f ms\n", total_time/(step));
 	printf("-------------------------------------------------------\n");
 	printf("Detail:\n");
