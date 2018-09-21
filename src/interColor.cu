@@ -152,6 +152,20 @@ void merge_colors_on_cpu(
 	}
 }
 
+
+void gather_colors(
+	int const vertex_num,
+	int const gpu_num,
+	int *const copy_num,
+	Graph **g,
+	DataSize *dsize)
+{
+
+	//Here we need to check all the dulicate verticves to meger the colors
+
+}
+
+
 void Gather_result_colors(
 		int const vertex_num, 
 		int const gpu_num, 
@@ -500,8 +514,32 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	    {
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],h_color[i][countcolorbegin]);	    	
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_dst[countcolorbegin],h_color[i][countcolorbegin]);
+	    	
+
+	    	for(int tag=0; tag < vertex_num; tag++)
+	    	{
+	    		if(g[i]->edge_duplicate_src[countcolorbegin] == g[i]->edge_duplicate_src[tag])
+	    		{
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    		}
+	    		if(g[i]->edge_duplicate_dst[countcolorbegin] == g[i]->edge_duplicate_dst[tag])
+	    		{
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    		}
+	    		if(g[i]->edge_duplicate_src[countcolorbegin] == g[i]->edge_duplicate_dst[tag])
+	    		{
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    		}
+	    		if(g[i]->edge_duplicate_dst[countcolorbegin] == g[i]->edge_duplicate_src[tag])
+	    		{
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    		}
+	    	}
+
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_src[countcolorbegin],h_color[i][countcolorbegin]);
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_dst[countcolorbegin],h_color[i][countcolorbegin]);
+
+
 
 	          for(countcolorsecond=countcolorbegin+1;countcolorsecond<vertex_num;countcolorsecond++)
 	            
