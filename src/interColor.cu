@@ -172,7 +172,8 @@ void Gather_result_colors(
 			{
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					color_gpu[i] = h_add_color[j][i];  
+					if(color_gpu[i] < h_add_color[j][i])
+						color_gpu[i] = h_add_color[j][i];  
 				}
 				
 				/*******************
