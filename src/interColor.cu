@@ -229,6 +229,12 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 		h_add_color[i]=(int *)malloc(sizeof(int)*(vertex_num+1));
 		//初始化颜色值 
 		//memset(h_color[i],rand()%init_num_colors,sizeof(int)*(vertex_num+1));
+		/************************************************
+		此处不能采用memset来进行初始化：
+		1.因为第一个程序的数组h_color是整型的，使用memset还是按字节赋值，这样赋值完以后，每个数组元素的值实际上是0x01010101即十进制的16843009。
+		2.如果用memset(a,1,20);就是对a指向的内存的20个字节进行赋值，每个都用ASCII为1的字符去填充，转为二进制后，1就是00000001,占一个字节。
+		一个INT元素是4字节，合一起就是1000000010000000100000001，就等于16843009，就完成了对一个INT元素的赋值了。
+		************************************************/
 		//memset(h_color[i],0,sizeof(int)*(vertex_num+1));
 
 		//printf("The Initialization Color is as follow\n");
