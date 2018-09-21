@@ -172,7 +172,7 @@ void Gather_result_colors(
 			{
 				for (int j = 0; j < gpu_num; ++j)
 				{
-					//color_gpu[i] = h_add_color[j][i];  
+					color_gpu[i] = h_add_color[j][i];  
 				}
 				
 				/*******************
@@ -456,8 +456,6 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 			total_compute_time[i]=duplicate_compute_time[i]+extract_bitmap_time[i]-local_compute_time[i]>0?(duplicate_compute_time[i]+extract_bitmap_time[i]):local_compute_time[i];
 		}		
 	}while(flag && step<10);
-
-
 
 
 	//Todo to get the true value of local vertice and duplicate vertice
