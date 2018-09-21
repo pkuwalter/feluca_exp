@@ -552,16 +552,14 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    	}
-
-	    	printf("Local");    	
+ 	
 	    	
-	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],h_color[i][countcolorbegin]);	    	
-	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_dst[countcolorbegin],h_color[i][countcolorbegin]);
+	    	printf("Local:\t%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],h_color[i][countcolorbegin]);	    	
+	    	printf("Local:\t%d\t%d\t%d\n",i,g[i]->edge_local_dst[countcolorbegin],h_color[i][countcolorbegin]);
 
-	    	printf("Duplicate");
 
-	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_src[countcolorbegin],h_color[i][countcolorbegin]);
-	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_dst[countcolorbegin],h_color[i][countcolorbegin]);
+	    	printf("Duplicate:\t%d\t%d\t%d\n",i,g[i]->edge_duplicate_src[countcolorbegin],h_color[i][countcolorbegin]);
+	    	printf("Duplicate:\t%d\t%d\t%d\n",i,g[i]->edge_duplicate_dst[countcolorbegin],h_color[i][countcolorbegin]);
 
 
 
