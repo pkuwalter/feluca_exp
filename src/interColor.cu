@@ -519,37 +519,37 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	    	{
 	    		if(g[i]->edge_local_src[countcolorbegin] == g[i]->edge_local_src[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_local_dst[countcolorbegin] == g[i]->edge_local_dst[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_local_src[countcolorbegin] == g[i]->edge_local_dst[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_local_dst[countcolorbegin] == g[i]->edge_local_src[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 
 
 	    		if(g[i]->edge_duplicate_src[countcolorbegin] == g[i]->edge_duplicate_src[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_duplicate_dst[countcolorbegin] == g[i]->edge_duplicate_dst[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_duplicate_src[countcolorbegin] == g[i]->edge_duplicate_dst[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    		if(g[i]->edge_duplicate_dst[countcolorbegin] == g[i]->edge_duplicate_src[tag])
 	    		{
-	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] < h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
+	    			h_color[i][countcolorbegin] = h_color[i][countcolorbegin] > h_color[i][tag]?h_color[i][countcolorbegin]:h_color[i][tag];
 	    		}
 	    	}
 
@@ -557,7 +557,7 @@ void coloring_gpu(Graph **g,int gpu_num,int *color_gpu,DataSize *dsize, int* out
 	    	
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_src[countcolorbegin],h_color[i][countcolorbegin]);	    	
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_local_dst[countcolorbegin],h_color[i][countcolorbegin]);
-	    	
+
 	    	printf("Duplicate");
 
 	    	printf("%d\t%d\t%d\n",i,g[i]->edge_duplicate_src[countcolorbegin],h_color[i][countcolorbegin]);
